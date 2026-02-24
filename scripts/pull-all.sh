@@ -6,6 +6,11 @@ cd "$ROOT_DIR"
 
 stacks=(proxy nextcloud immich ha jellyfin jellyseerr calibre mollysocket)
 
+project_name_for_stack() {
+  local stack="$1"
+  echo "${stack}_fresh"
+}
+
 for stack in "${stacks[@]}"; do
   if [[ ! -f "$stack/.env" ]]; then
     echo "Missing $stack/.env"
@@ -16,7 +21,7 @@ for stack in "${stacks[@]}"; do
   echo "Pulling images for stack: $stack"
   (
     cd "$stack"
-    docker compose --project-name "$stack" pull
+    docker compose --project-name "$(project_name_for_stack "$stack")" pull
   )
 done
 

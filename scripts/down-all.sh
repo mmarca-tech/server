@@ -8,11 +8,7 @@ stacks=(proxy mollysocket calibre jellyseerr jellyfin ha immich nextcloud)
 
 project_name_for_stack() {
   local stack="$1"
-  if [[ "$stack" == "nextcloud" ]]; then
-    echo "nextcloud_fresh"
-  else
-    echo "$stack"
-  fi
+  echo "${stack}_fresh"
 }
 
 for stack in "${stacks[@]}"; do

@@ -6,11 +6,7 @@ cd "$ROOT_DIR"
 
 project_name_for_stack() {
   local stack="$1"
-  if [[ "$stack" == "nextcloud" ]]; then
-    echo "nextcloud_fresh"
-  else
-    echo "$stack"
-  fi
+  echo "${stack}_fresh"
 }
 
 if [[ $# -lt 1 ]]; then

@@ -8,11 +8,7 @@ stacks=(nextcloud immich ha jellyfin jellyseerr calibre mollysocket proxy)
 
 project_name_for_stack() {
   local stack="$1"
-  if [[ "$stack" == "nextcloud" ]]; then
-    echo "nextcloud_fresh"
-  else
-    echo "$stack"
-  fi
+  echo "${stack}_fresh"
 }
 
 if ! docker network inspect proxy >/dev/null 2>&1; then
