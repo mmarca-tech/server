@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MODEL="${MODEL:-openai/qwen2.5:3b}"
+MODEL="${MODEL:-openai/gpt-4o-mini}"
 BASE_URL="${BASE_URL:-http://127.0.0.1:11434/v1}"
 ENV_FILE="${ENV_FILE:-/etc/openclaw/openclaw.env}"
 
@@ -68,6 +68,22 @@ if [[ "$MODEL" == */* ]]; then
     if (( patched_files > 0 )); then
       echo "Patched $patched_files OpenClaw runtime config file(s) under /srv/openclaw/.openclaw"
     fi
+  fi
+fi
+
+# Backward-compat cleanup: replace known older local-model values that trigger fallback.
+if [[ -d /srv/openclaw/.openclaw ]]; then
+  patched_legacy=0
+  while IFS= read -r f; do
+    [[ -z "$f" ]] && continue
+    as_root sed -i -E \
+      "s#anthropic/qwen2\\.5:3b#${MODEL}#g; s#openai/qwen2\\.5:3b#${MODEL}#g; s#\"qwen2\\.5:3b\"#\"${MODEL}\"#g" \
+      "$f"
+    patched_legacy=$((patched_legacy + 1))
+  done < <(as_root grep -RIlE --binary-files=without-match 'qwen2\.5:3b|anthropic/qwen2\.5:3b|openai/qwen2\.5:3b' /srv/openclaw/.openclaw 2>/dev/null || true)
+
+  if (( patched_legacy > 0 )); then
+    echo "Patched $patched_legacy legacy qwen2.5:3b reference(s) under /srv/openclaw/.openclaw"
   fi
 fi
 

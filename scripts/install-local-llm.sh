@@ -2,7 +2,7 @@
 set -euo pipefail
 
 BASE_MODEL="${BASE_MODEL:-qwen2.5:3b}"
-MODEL_ALIAS="${MODEL_ALIAS:-openai/qwen2.5:3b}"
+MODEL_ALIAS="${MODEL_ALIAS:-gpt-4o-mini}"
 
 if [[ "${EUID}" -eq 0 ]]; then
   SUDO=""
