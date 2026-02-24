@@ -32,7 +32,7 @@ set_kv() {
   local key="$1"
   local value="$2"
   local escaped_value
-  escaped_value="$(printf '%s' "$value" | sed -e 's/[\\&/]/\\\\&/g')"
+  escaped_value="$(printf '%s' "$value" | sed -e 's/[\\&]/\\\\&/g')"
 
   if as_root grep -qE "^${key}=" "$ENV_FILE"; then
     as_root sed -i -E "s#^${key}=.*#${key}=${escaped_value}#" "$ENV_FILE"
@@ -50,6 +50,26 @@ set_kv OPENAI_BASE_URL "$BASE_URL"
 set_kv OPENAI_MODEL "$MODEL"
 set_kv ANTHROPIC_API_KEY ""
 set_kv GEMINI_API_KEY ""
+
+# If onboarding persisted a bare model name in OpenClaw runtime config,
+# rewrite it to the provider-qualified model to prevent anthropic fallback.
+if [[ "$MODEL" == */* ]]; then
+  bare_model="${MODEL#*/}"
+  if [[ -d /srv/openclaw/.openclaw ]]; then
+    search_escaped="$(printf '%s' "$bare_model" | sed -e 's/[][(){}.^$?+*|\\]/\\&/g')"
+    replace_escaped="$(printf '%s' "$MODEL" | sed -e 's/[\\&]/\\\\&/g')"
+    patched_files=0
+    while IFS= read -r f; do
+      [[ -z "$f" ]] && continue
+      as_root sed -i -E "s#${search_escaped}#${replace_escaped}#g" "$f"
+      patched_files=$((patched_files + 1))
+    done < <(as_root grep -RIlF --binary-files=without-match "$bare_model" /srv/openclaw/.openclaw 2>/dev/null || true)
+
+    if (( patched_files > 0 )); then
+      echo "Patched $patched_files OpenClaw runtime config file(s) under /srv/openclaw/.openclaw"
+    fi
+  fi
+fi
 
 as_root chown root:openclaw "$ENV_FILE"
 as_root chmod 640 "$ENV_FILE"
