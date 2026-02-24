@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH:-}"
+
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
@@ -32,6 +34,18 @@ run_with_optional_sudo() {
   else
     "$@"
   fi
+}
+
+resolve_ufw() {
+  if command -v ufw >/dev/null 2>&1; then
+    command -v ufw
+    return 0
+  fi
+  if [[ -x /usr/sbin/ufw ]]; then
+    echo "/usr/sbin/ufw"
+    return 0
+  fi
+  return 1
 }
 
 echo "Running security checks in $ROOT_DIR"
@@ -119,8 +133,8 @@ else
   warn "ip command unavailable; LAN IP check skipped"
 fi
 
-if command -v ufw >/dev/null 2>&1; then
-  if ufw_status="$(run_with_optional_sudo ufw status 2>/dev/null)"; then
+if UFW_BIN="$(resolve_ufw 2>/dev/null)"; then
+  if ufw_status="$(run_with_optional_sudo "$UFW_BIN" status 2>/dev/null)"; then
     if echo "$ufw_status" | grep -Eq '^Status: active'; then
       pass "UFW is active"
 
