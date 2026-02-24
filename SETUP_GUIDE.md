@@ -204,7 +204,7 @@ You can override model/base URL when needed:
 
 ```bash
 BASE_MODEL=llama3.2:3b MODEL_ALIAS=gpt-4o-mini ./scripts/install-local-llm.sh
-MODEL=ollama/gpt-4o-mini OLLAMA_BASE_URL=http://127.0.0.1:11434 ./scripts/connect-clawdbot-local.sh
+MODEL=openai/gpt-4o-mini BASE_URL=http://127.0.0.1:11434/v1 ./scripts/connect-clawdbot-local.sh
 ```
 
 Equivalent Make targets:

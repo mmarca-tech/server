@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MODEL="${MODEL:-ollama/gpt-4o-mini}"
-OLLAMA_BASE_URL="${OLLAMA_BASE_URL:-${BASE_URL:-http://127.0.0.1:11434}}"
+MODEL="${MODEL:-openai/gpt-4o-mini}"
+BASE_URL="${BASE_URL:-http://127.0.0.1:11434/v1}"
 ENV_FILE="${ENV_FILE:-/etc/openclaw/openclaw.env}"
 
 if [[ "${EUID}" -eq 0 ]]; then
@@ -46,9 +46,9 @@ as_root cp "$ENV_FILE" "$backup_file"
 echo "Backed up env file to: $backup_file"
 
 set_kv OLLAMA_API_KEY ollama-local
-set_kv OPENAI_API_KEY ""
-set_kv OPENAI_BASE_URL ""
-set_kv OPENAI_MODEL ""
+set_kv OPENAI_API_KEY local
+set_kv OPENAI_BASE_URL "$BASE_URL"
+set_kv OPENAI_MODEL "$MODEL"
 set_kv ANTHROPIC_API_KEY ""
 set_kv GEMINI_API_KEY ""
 
@@ -88,14 +88,14 @@ if [[ -d /srv/openclaw/.openclaw ]]; then
   fi
 fi
 
-# Ensure persisted OpenClaw runtime config points to local Ollama provider.
+# Ensure persisted OpenClaw runtime config points to local OpenAI-compatible endpoint.
 runtime_cfg="/srv/openclaw/.openclaw/openclaw.json"
 if [[ -f "$runtime_cfg" ]]; then
-  as_root python3 - "$runtime_cfg" "$MODEL" <<'PY'
+  as_root python3 - "$runtime_cfg" "$MODEL" "$BASE_URL" <<'PY'
 import json
 import sys
 
-cfg_path, model = sys.argv[1], sys.argv[2]
+cfg_path, model, base_url = sys.argv[1], sys.argv[2], sys.argv[3]
 with open(cfg_path, "r", encoding="utf-8") as f:
     cfg = json.load(f)
 
@@ -108,9 +108,9 @@ models.setdefault(model, {})
 if agents.get("workspace", "").startswith("/var/lib/openclaw/"):
     agents["workspace"] = "/srv/openclaw/.openclaw/workspace"
 
-# Drop stale OpenAI provider overrides that force cloud OpenAI calls.
-if isinstance(cfg.get("providers"), dict):
-    cfg["providers"].pop("openai", None)
+providers = cfg.setdefault("providers", {}).setdefault("openai", {})
+providers["apiKey"] = "local"
+providers["baseURL"] = base_url
 
 with open(cfg_path, "w", encoding="utf-8") as f:
     json.dump(cfg, f, indent=2)
@@ -128,13 +128,11 @@ as_root systemctl --no-pager --full status openclaw-gateway | sed -n '1,25p'
 
 echo "Testing local model endpoint"
 if command -v curl >/dev/null 2>&1; then
-  test_base="${OLLAMA_BASE_URL%/}"
-  test_base="${test_base%/v1}"
-  curl -fsS "${test_base}/api/tags" >/dev/null
-  echo "Local model API is reachable at ${test_base}"
+  curl -fsS http://127.0.0.1:11434/api/tags >/dev/null
+  echo "Local model API is reachable at 127.0.0.1:11434"
 fi
 
 echo
 echo "OpenClaw/ClawdBot now configured for local model."
 echo "Model: $MODEL"
-echo "Ollama URL: $OLLAMA_BASE_URL"
+echo "Base URL: $BASE_URL"

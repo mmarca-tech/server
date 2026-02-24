@@ -141,7 +141,7 @@ Use a local small model (instead of OpenAI/cloud) for OpenClaw/ClawdBot:
 ./scripts/connect-clawdbot-local.sh
 ```
 
-Default local model wiring uses alias `gpt-4o-mini` in Ollama and configures OpenClaw model `ollama/gpt-4o-mini`.
+Default local model wiring uses alias `gpt-4o-mini` in Ollama and configures OpenClaw model `openai/gpt-4o-mini`.
 
 Equivalent Make targets:
 
