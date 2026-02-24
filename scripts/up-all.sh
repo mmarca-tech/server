@@ -6,6 +6,15 @@ cd "$ROOT_DIR"
 
 stacks=(nextcloud immich ha jellyfin jellyseerr calibre mollysocket proxy)
 
+project_name_for_stack() {
+  local stack="$1"
+  if [[ "$stack" == "nextcloud" ]]; then
+    echo "nextcloud_fresh"
+  else
+    echo "$stack"
+  fi
+}
+
 if ! docker network inspect proxy >/dev/null 2>&1; then
   echo "Creating external Docker network: proxy"
   docker network create proxy >/dev/null
@@ -23,7 +32,7 @@ for stack in "${stacks[@]}"; do
   echo "Starting stack: $stack"
   (
     cd "$stack"
-    docker compose --project-name "$stack" up -d
+    docker compose --project-name "$(project_name_for_stack "$stack")" up -d
   )
 done
 

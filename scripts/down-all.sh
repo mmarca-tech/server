@@ -6,6 +6,15 @@ cd "$ROOT_DIR"
 
 stacks=(proxy mollysocket calibre jellyseerr jellyfin ha immich nextcloud)
 
+project_name_for_stack() {
+  local stack="$1"
+  if [[ "$stack" == "nextcloud" ]]; then
+    echo "nextcloud_fresh"
+  else
+    echo "$stack"
+  fi
+}
+
 for stack in "${stacks[@]}"; do
   if [[ ! -f "$stack/docker-compose.yml" ]]; then
     echo "Skipping missing stack directory: $stack"
@@ -20,7 +29,7 @@ for stack in "${stacks[@]}"; do
   echo "Stopping stack: $stack"
   (
     cd "$stack"
-    docker compose --project-name "$stack" down
+    docker compose --project-name "$(project_name_for_stack "$stack")" down
   )
 done
 
