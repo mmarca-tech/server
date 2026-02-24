@@ -186,7 +186,29 @@ sudo systemctl restart openclaw-gateway
 The installed `openclaw-gateway` systemd unit binds to `loopback` by default to keep it host-local.
 OpenClaw runtime data is stored in `/srv/openclaw` (not `/var/lib/openclaw`) to avoid filling the small `/var` partition.
 
-### 1.6 Optional: local small model for OpenClaw/ClawdBot
+### 1.6 Configure OpenAI cloud for OpenClaw/ClawdBot (recommended)
+
+Set your OpenAI API key and apply cloud config:
+
+```bash
+OPENAI_API_KEY='sk-...' ./scripts/connect-clawdbot-openai.sh
+```
+
+Default cloud model is `openai/gpt-5.2`.
+
+Optional overrides:
+
+```bash
+OPENAI_API_KEY='sk-...' MODEL='openai/gpt-5.2-codex' TELEGRAM_DM_POLICY='pairing' ./scripts/connect-clawdbot-openai.sh
+```
+
+Equivalent Make target:
+
+```bash
+OPENAI_API_KEY='sk-...' make clawdbot-openai
+```
+
+### 1.7 Optional fallback: local small model for OpenClaw/ClawdBot
 
 Install local model runtime and pull a small model:
 

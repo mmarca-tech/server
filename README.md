@@ -150,6 +150,26 @@ make local-llm-install
 make clawdbot-local
 ```
 
+Use OpenAI cloud for OpenClaw/ClawdBot (recommended on low-power hosts):
+
+```bash
+OPENAI_API_KEY='sk-...' ./scripts/connect-clawdbot-openai.sh
+```
+
+Default cloud model is `openai/gpt-5.2`.
+
+Optional overrides:
+
+```bash
+OPENAI_API_KEY='sk-...' MODEL='openai/gpt-5.2-codex' TELEGRAM_DM_POLICY='pairing' ./scripts/connect-clawdbot-openai.sh
+```
+
+Equivalent Make target:
+
+```bash
+OPENAI_API_KEY='sk-...' make clawdbot-openai
+```
+
 Run hardening audit checks:
 
 ```bash
