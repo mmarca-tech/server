@@ -1,0 +1,17 @@
+services:
+  calibre-web:
+    image: ${CALIBRE_WEB_IMAGE}
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    env_file:
+      - .env
+    volumes:
+      - /srv/calibre/config:/config
+      - /srv/calibre/library:/books
+
+networks:
+  proxy:
+    external: true

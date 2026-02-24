@@ -1,0 +1,18 @@
+services:
+  jellyfin:
+    image: ${JELLYFIN_IMAGE}
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    volumes:
+      - /srv/jellyfin/config:/config
+      - /srv/jellyfin/cache:/cache
+      - /srv/jellyfin/media:/media:ro
+    env_file:
+      - .env
+
+networks:
+  proxy:
+    external: true

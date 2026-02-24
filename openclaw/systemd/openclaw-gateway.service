@@ -1,0 +1,30 @@
+[Unit]
+Description=OpenClaw Gateway
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=openclaw
+Group=openclaw
+WorkingDirectory=/var/lib/openclaw
+EnvironmentFile=/etc/openclaw/openclaw.env
+ExecStart=/usr/bin/env openclaw gateway --bind lan --port 18789
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=full
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+LockPersonality=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+RemoveIPC=true
+ReadWritePaths=/var/lib/openclaw
+
+[Install]
+WantedBy=multi-user.target

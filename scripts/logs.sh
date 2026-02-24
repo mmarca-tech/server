@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -lt 1 ]]; then
+  echo "Usage: $0 <stack> [service]"
+  echo "Stacks: proxy nextcloud immich ha jellyfin jellyseerr calibre mollysocket"
+  exit 1
+fi
+
+stack="$1"
+service="${2:-}"
+
+if [[ ! -f "$stack/docker-compose.yml" ]]; then
+  echo "Unknown stack: $stack"
+  exit 1
+fi
+
+if [[ ! -f "$stack/.env" ]]; then
+  echo "Missing $stack/.env"
+  echo "Run ./scripts/init-env.sh before managing stacks."
+  exit 1
+fi
+
+if [[ -n "$service" ]]; then
+  (
+    cd "$stack"
+    docker compose --project-name "$stack" logs -f --tail=200 "$service"
+  )
+else
+  (
+    cd "$stack"
+    docker compose --project-name "$stack" logs -f --tail=200
+  )
+fi

@@ -1,0 +1,12 @@
+services:
+  homeassistant:
+    image: ${HOMEASSISTANT_IMAGE}
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    network_mode: host
+    volumes:
+      - /srv/homeassistant/config:/config
+      - /etc/localtime:/etc/localtime:ro
+    env_file:
+      - .env
