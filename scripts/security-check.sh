@@ -174,8 +174,10 @@ if command -v ss >/dev/null 2>&1; then
     pass "No listeners on OpenClaw network ports (18789/18790)"
   elif echo "$openclaw_ports" | rg -q '0\.0\.0\.0:1878[90]|\[::\]:1878[90]'; then
     fail "OpenClaw port is listening on public interfaces:\n$openclaw_ports"
+  elif echo "$openclaw_ports" | rg -q '127\.0\.0\.1:1878[90]|\[::1\]:1878[90]'; then
+    pass "OpenClaw is bound to loopback only"
   else
-    warn "OpenClaw ports are listening but not on wildcard interfaces:\n$openclaw_ports"
+    warn "OpenClaw ports are listening on non-public interfaces:\n$openclaw_ports"
   fi
 
   docker_remote_api="$(ss -ltnH '( sport = :2375 or sport = :2376 )' 2>/dev/null || true)"

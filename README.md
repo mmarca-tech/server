@@ -111,6 +111,7 @@ make up
 ```
 
 This installs OpenClaw globally with `npm`, creates `/etc/openclaw/openclaw.env`, installs `openclaw-gateway` as a systemd service, and starts it.
+The systemd unit binds OpenClaw to `loopback` by default (not LAN-exposed), which matches the Telegram-only access model.
 
 Then edit:
 

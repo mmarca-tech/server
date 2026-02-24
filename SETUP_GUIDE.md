@@ -183,6 +183,8 @@ sudo systemctl restart openclaw-gateway
 ./scripts/openclaw-onboard.sh
 ```
 
+The installed `openclaw-gateway` systemd unit binds to `loopback` by default to keep it host-local.
+
 ### 1.6 Optional: local small model for OpenClaw/ClawdBot
 
 Install local model runtime and pull a small model:
