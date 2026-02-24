@@ -1,7 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+
 stacks=(proxy nextcloud immich ha jellyfin jellyseerr calibre mollysocket)
+
+has_key() {
+  local key="$1"
+  local file="$2"
+
+  if command -v rg >/dev/null 2>&1; then
+    rg -q "^${key}=" "$file"
+  else
+    grep -qE "^${key}=" "$file"
+  fi
+}
 
 sync_missing_keys() {
   local src="$1"
@@ -14,7 +28,7 @@ sync_missing_keys() {
     [[ "$line" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]] || continue
     key="${line%%=*}"
 
-    if ! rg -q "^${key}=" "$dst"; then
+    if ! has_key "$key" "$dst"; then
       echo "$line" >> "$dst"
       added=$((added + 1))
     fi

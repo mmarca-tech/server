@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: bootstrap init pull up down logs openclaw-install openclaw-onboard security-check
+.PHONY: bootstrap init pull up down logs openclaw-install openclaw-onboard security-check docker-install
 
 bootstrap:
 	./scripts/bootstrap-host.sh
@@ -32,3 +32,6 @@ openclaw-onboard:
 
 security-check:
 	./scripts/security-check.sh
+
+docker-install:
+	./scripts/install-docker-host.sh

@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+
 NODE_MAJOR="${NODE_MAJOR:-22}"
 
 if [[ "${EUID}" -eq 0 ]]; then
@@ -42,12 +45,12 @@ sudo chown -R openclaw:openclaw /var/lib/openclaw
 sudo mkdir -p /etc/openclaw
 if [[ ! -f /etc/openclaw/openclaw.env ]]; then
   echo "Creating /etc/openclaw/openclaw.env from template"
-  sudo cp openclaw/openclaw.env.example /etc/openclaw/openclaw.env
+  sudo cp "$ROOT_DIR/openclaw/openclaw.env.example" /etc/openclaw/openclaw.env
 fi
 sudo chown root:openclaw /etc/openclaw/openclaw.env
 sudo chmod 640 /etc/openclaw/openclaw.env
 
-sudo install -m 0644 openclaw/systemd/openclaw-gateway.service /etc/systemd/system/openclaw-gateway.service
+sudo install -m 0644 "$ROOT_DIR/openclaw/systemd/openclaw-gateway.service" /etc/systemd/system/openclaw-gateway.service
 sudo systemctl daemon-reload
 sudo systemctl enable --now openclaw-gateway
 

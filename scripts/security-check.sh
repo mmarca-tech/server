@@ -4,6 +4,9 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
+LAN_IP="${LAN_IP:-192.168.1.20}"
+LAN_CIDR="${LAN_CIDR:-192.168.1.0/24}"
+
 pass_count=0
 warn_count=0
 fail_count=0
@@ -24,7 +27,7 @@ fail() {
 }
 
 run_with_optional_sudo() {
-  if sudo -n true >/dev/null 2>&1; then
+  if command -v sudo >/dev/null 2>&1 && sudo -n true >/dev/null 2>&1; then
     sudo -n "$@"
   else
     "$@"
@@ -106,6 +109,16 @@ else
   pass "Expected /srv directory layout exists"
 fi
 
+if command -v ip >/dev/null 2>&1; then
+  if ip -4 addr show 2>/dev/null | rg -q -F "$LAN_IP"; then
+    pass "Host has expected LAN IP $LAN_IP"
+  else
+    warn "Host does not currently show expected LAN IP $LAN_IP"
+  fi
+else
+  warn "ip command unavailable; LAN IP check skipped"
+fi
+
 if command -v ufw >/dev/null 2>&1; then
   if ufw_status="$(run_with_optional_sudo ufw status 2>/dev/null)"; then
     if echo "$ufw_status" | rg -q '^Status: active'; then
@@ -121,6 +134,17 @@ if command -v ufw >/dev/null 2>&1; then
         pass "UFW allows 443/tcp"
       else
         warn "UFW rule for 443/tcp not found"
+      fi
+
+      ssh_allow_lines="$(echo "$ufw_status" | rg '22/tcp\s+ALLOW' || true)"
+      if [[ -z "$ssh_allow_lines" ]]; then
+        fail "No UFW allow rule found for SSH (22/tcp)"
+      elif echo "$ssh_allow_lines" | rg -q 'Anywhere|0\.0\.0\.0/0|::/0'; then
+        fail "SSH appears broadly exposed in UFW rules:\n$ssh_allow_lines"
+      elif echo "$ssh_allow_lines" | rg -q -F "$LAN_CIDR"; then
+        pass "UFW restricts SSH access to $LAN_CIDR"
+      else
+        warn "SSH allow rule exists but does not match expected LAN_CIDR=$LAN_CIDR:\n$ssh_allow_lines"
       fi
 
       if echo "$ufw_status" | rg -q '18789/tcp\s+DENY'; then
@@ -162,6 +186,19 @@ if command -v ss >/dev/null 2>&1; then
   fi
 else
   warn "Could not run socket checks because ss is unavailable"
+fi
+
+if command -v docker >/dev/null 2>&1; then
+  docker_root_dir="$(docker info -f '{{.DockerRootDir}}' 2>/dev/null || true)"
+  if [[ -z "$docker_root_dir" ]]; then
+    warn "Could not read Docker Root Dir (daemon may be down or requires sudo)"
+  elif [[ "$docker_root_dir" == "/srv/docker" ]]; then
+    pass "Docker Root Dir is /srv/docker"
+  else
+    warn "Docker Root Dir is $docker_root_dir (expected /srv/docker for this host layout)"
+  fi
+else
+  warn "Docker CLI is not installed"
 fi
 
 if command -v systemctl >/dev/null 2>&1; then

@@ -19,7 +19,19 @@ And host-native (non-Docker):
 
 ## 1. Prerequisites on Debian 12
 
-Install Docker Engine + Compose plugin:
+Install Docker Engine + Compose plugin (recommended: repo script with `/srv/docker` data root):
+
+```bash
+./scripts/install-docker-host.sh
+```
+
+Equivalent Make target:
+
+```bash
+make docker-install
+```
+
+Manual alternative:
 
 ```bash
 sudo apt update
@@ -47,8 +59,8 @@ sudo systemctl enable --now avahi-daemon
 
 Open and forward ports to this Debian host:
 
-- TCP 80 -> 80
-- TCP 443 -> 443
+- TCP 80 -> 192.168.1.20:80
+- TCP 443 -> 192.168.1.20:443
 
 Create DNS A records to your WAN IP:
 
@@ -186,7 +198,7 @@ make down
 
 ## Notes
 
-- Recommended host partitions are documented in `SETUP_GUIDE.md` (`/`, `/var/lib/docker`, `/srv` split).
+- Recommended host partitions are documented in `SETUP_GUIDE.md` (`/`, `/var`, `/srv` split for your current host).
 - Data is persisted under `/srv/*` with this host layout:
 ```text
 /srv/
