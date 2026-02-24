@@ -7,8 +7,11 @@ Wants=network-online.target
 Type=simple
 User=openclaw
 Group=openclaw
+SupplementaryGroups=docker
 WorkingDirectory=/srv/openclaw
 Environment=HOME=/srv/openclaw
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=DOCKER_HOST=unix:///var/run/docker.sock
 EnvironmentFile=/etc/openclaw/openclaw.env
 ExecStart=/usr/bin/env openclaw gateway --bind loopback --port 18789
 Restart=always

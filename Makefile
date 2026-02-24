@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: bootstrap init pull up down logs openclaw-install openclaw-onboard security-check docker-install local-llm-install clawdbot-local clawdbot-openai
+.PHONY: bootstrap init pull up down logs openclaw-install openclaw-onboard security-check docker-install local-llm-install clawdbot-local clawdbot-openai master-setup
 
 bootstrap:
 	./scripts/bootstrap-host.sh
@@ -44,3 +44,6 @@ clawdbot-local:
 
 clawdbot-openai:
 	./scripts/connect-clawdbot-openai.sh
+
+master-setup:
+	./scripts/master-setup.sh

@@ -4,6 +4,11 @@ set -euo pipefail
 MODEL="${MODEL:-ollama/gpt-4o-mini}"
 OLLAMA_BASE_URL="${OLLAMA_BASE_URL:-${BASE_URL:-http://127.0.0.1:11434}}"
 ENV_FILE="${ENV_FILE:-/etc/openclaw/openclaw.env}"
+OPENCLAW_UNIT="${OPENCLAW_UNIT:-openclaw-gateway}"
+
+if [[ "$OPENCLAW_UNIT" == *.service ]]; then
+  OPENCLAW_UNIT="${OPENCLAW_UNIT%.service}"
+fi
 
 if [[ "${EUID}" -eq 0 ]]; then
   SUDO=""
@@ -22,10 +27,57 @@ as_root() {
   fi
 }
 
+ensure_openclaw_service_access() {
+  local changed=0
+  local dropin_dir="/etc/systemd/system/${OPENCLAW_UNIT}.service.d"
+  local dropin_file="${dropin_dir}/10-docker-access.conf"
+  local desired_dropin current_dropin
+  desired_dropin=$'[Service]\nSupplementaryGroups=docker\nEnvironment=DOCKER_HOST=unix:///var/run/docker.sock\n'
+
+  if ! as_root systemctl list-unit-files --type=service --no-legend 2>/dev/null | awk '{print $1}' | grep -qx "${OPENCLAW_UNIT}.service"; then
+    echo "Missing ${OPENCLAW_UNIT}.service"
+    echo "Run ./scripts/install-openclaw-host.sh first."
+    exit 1
+  fi
+
+  if ! id -u openclaw >/dev/null 2>&1; then
+    echo "Missing system user: openclaw"
+    echo "Run ./scripts/install-openclaw-host.sh first."
+    exit 1
+  fi
+
+  if ! getent group docker >/dev/null 2>&1; then
+    as_root groupadd docker
+    changed=1
+  fi
+
+  if ! id -nG openclaw | tr ' ' '\n' | grep -qx docker; then
+    as_root usermod -aG docker openclaw
+    changed=1
+  fi
+
+  current_dropin="$(as_root cat "$dropin_file" 2>/dev/null || true)"
+  if [[ "${current_dropin}"$'\n' != "$desired_dropin" ]]; then
+    as_root mkdir -p "$dropin_dir"
+    printf '%s' "$desired_dropin" | as_root tee "$dropin_file" >/dev/null
+    changed=1
+  fi
+
+  if (( changed > 0 )); then
+    as_root systemctl daemon-reload
+  fi
+}
+
 if [[ ! -f "$ENV_FILE" ]]; then
   echo "Missing $ENV_FILE"
   echo "Run ./scripts/install-openclaw-host.sh first."
   exit 1
+fi
+
+ensure_openclaw_service_access
+
+if [[ ! -S /var/run/docker.sock ]]; then
+  echo "Warning: /var/run/docker.sock is not present. Start Docker if OpenClaw will use Docker tools."
 fi
 
 set_kv() {
@@ -123,9 +175,9 @@ fi
 as_root chown root:openclaw "$ENV_FILE"
 as_root chmod 640 "$ENV_FILE"
 
-echo "Restarting OpenClaw gateway"
-as_root systemctl restart openclaw-gateway
-as_root systemctl --no-pager --full status openclaw-gateway | sed -n '1,25p'
+echo "Restarting ${OPENCLAW_UNIT}.service"
+as_root systemctl restart "${OPENCLAW_UNIT}.service"
+as_root systemctl --no-pager --full status "${OPENCLAW_UNIT}.service" | sed -n '1,25p'
 
 echo "Testing local model endpoint"
 if command -v curl >/dev/null 2>&1; then

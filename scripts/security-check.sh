@@ -36,33 +36,33 @@ run_with_optional_sudo() {
 
 echo "Running security checks in $ROOT_DIR"
 
-if rg -q -F 'claw.{$ROOT_DOMAIN}' proxy/Caddyfile; then
+if grep -Fq 'claw.{$ROOT_DOMAIN}' proxy/Caddyfile; then
   fail "OpenClaw public route found in proxy/Caddyfile"
 else
   pass "No OpenClaw route in proxy/Caddyfile"
 fi
 
-if rg -q '^\(secure_headers\)' proxy/Caddyfile && rg -q 'Strict-Transport-Security' proxy/Caddyfile; then
+if grep -Eq '^\(secure_headers\)' proxy/Caddyfile && grep -Fq 'Strict-Transport-Security' proxy/Caddyfile; then
   pass "Caddy secure headers policy is present"
 else
   fail "Caddy secure headers policy is missing"
 fi
 
-compose_mutable="$(rg -n 'image:.*:(latest|release|stable)\\b' */docker-compose.yml || true)"
+compose_mutable="$(grep -nHE 'image:.*:(latest|release|stable)\b' */docker-compose.yml 2>/dev/null || true)"
 if [[ -n "$compose_mutable" ]]; then
   fail "Mutable image tags found in compose files:\n$compose_mutable"
 else
   pass "Compose files do not use latest/release/stable image tags"
 fi
 
-env_mutable="$(rg -n '^[A-Z0-9_]+_IMAGE=.*:(latest|release|stable)\\b' */.env */.env.example 2>/dev/null || true)"
+env_mutable="$(grep -nHE '^[A-Z0-9_]+_IMAGE=.*:(latest|release|stable)\b' */.env */.env.example 2>/dev/null || true)"
 if [[ -n "$env_mutable" ]]; then
   fail "Mutable image tags found in env files:\n$env_mutable"
 else
   pass "Env image variables are pinned away from latest/release/stable"
 fi
 
-non_proxy_port_pubs="$(rg -n '^\s+ports:\s*$' nextcloud/docker-compose.yml immich/docker-compose.yml ha/docker-compose.yml jellyfin/docker-compose.yml jellyseerr/docker-compose.yml calibre/docker-compose.yml mollysocket/docker-compose.yml || true)"
+non_proxy_port_pubs="$(grep -nHE '^[[:space:]]+ports:[[:space:]]*$' nextcloud/docker-compose.yml immich/docker-compose.yml ha/docker-compose.yml jellyfin/docker-compose.yml jellyseerr/docker-compose.yml calibre/docker-compose.yml mollysocket/docker-compose.yml || true)"
 if [[ -n "$non_proxy_port_pubs" ]]; then
   fail "Non-proxy stacks publish host ports:\n$non_proxy_port_pubs"
 else
@@ -110,7 +110,7 @@ else
 fi
 
 if command -v ip >/dev/null 2>&1; then
-  if ip -4 addr show 2>/dev/null | rg -q -F "$LAN_IP"; then
+  if ip -4 addr show 2>/dev/null | grep -Fq "$LAN_IP"; then
     pass "Host has expected LAN IP $LAN_IP"
   else
     warn "Host does not currently show expected LAN IP $LAN_IP"
@@ -121,39 +121,39 @@ fi
 
 if command -v ufw >/dev/null 2>&1; then
   if ufw_status="$(run_with_optional_sudo ufw status 2>/dev/null)"; then
-    if echo "$ufw_status" | rg -q '^Status: active'; then
+    if echo "$ufw_status" | grep -Eq '^Status: active'; then
       pass "UFW is active"
 
-      if echo "$ufw_status" | rg -q '80/tcp\s+ALLOW'; then
+      if echo "$ufw_status" | grep -Eq '80/tcp[[:space:]]+ALLOW'; then
         pass "UFW allows 80/tcp"
       else
         warn "UFW rule for 80/tcp not found"
       fi
 
-      if echo "$ufw_status" | rg -q '443/tcp\s+ALLOW'; then
+      if echo "$ufw_status" | grep -Eq '443/tcp[[:space:]]+ALLOW'; then
         pass "UFW allows 443/tcp"
       else
         warn "UFW rule for 443/tcp not found"
       fi
 
-      ssh_allow_lines="$(echo "$ufw_status" | rg '22/tcp\s+ALLOW' || true)"
+      ssh_allow_lines="$(echo "$ufw_status" | grep -E '22/tcp[[:space:]]+ALLOW' || true)"
       if [[ -z "$ssh_allow_lines" ]]; then
         fail "No UFW allow rule found for SSH (22/tcp)"
-      elif echo "$ssh_allow_lines" | rg -q 'Anywhere|0\.0\.0\.0/0|::/0'; then
+      elif echo "$ssh_allow_lines" | grep -Eq 'Anywhere|0\.0\.0\.0/0|::/0'; then
         fail "SSH appears broadly exposed in UFW rules:\n$ssh_allow_lines"
-      elif echo "$ssh_allow_lines" | rg -q -F "$LAN_CIDR"; then
+      elif echo "$ssh_allow_lines" | grep -Fq "$LAN_CIDR"; then
         pass "UFW restricts SSH access to $LAN_CIDR"
       else
         warn "SSH allow rule exists but does not match expected LAN_CIDR=$LAN_CIDR:\n$ssh_allow_lines"
       fi
 
-      if echo "$ufw_status" | rg -q '18789/tcp\s+DENY'; then
+      if echo "$ufw_status" | grep -Eq '18789/tcp[[:space:]]+DENY'; then
         pass "UFW denies 18789/tcp"
       else
         fail "UFW deny rule for 18789/tcp not found"
       fi
 
-      if echo "$ufw_status" | rg -q '18790/tcp\s+DENY'; then
+      if echo "$ufw_status" | grep -Eq '18790/tcp[[:space:]]+DENY'; then
         pass "UFW denies 18790/tcp"
       else
         fail "UFW deny rule for 18790/tcp not found"
@@ -172,9 +172,9 @@ if command -v ss >/dev/null 2>&1; then
   openclaw_ports="$(ss -ltnH '( sport = :18789 or sport = :18790 )' 2>/dev/null || true)"
   if [[ -z "$openclaw_ports" ]]; then
     pass "No listeners on OpenClaw network ports (18789/18790)"
-  elif echo "$openclaw_ports" | rg -q '0\.0\.0\.0:1878[90]|\[::\]:1878[90]'; then
+  elif echo "$openclaw_ports" | grep -Eq '0\.0\.0\.0:1878[90]|\[::\]:1878[90]'; then
     fail "OpenClaw port is listening on public interfaces:\n$openclaw_ports"
-  elif echo "$openclaw_ports" | rg -q '127\.0\.0\.1:1878[90]|\[::1\]:1878[90]'; then
+  elif echo "$openclaw_ports" | grep -Eq '127\.0\.0\.1:1878[90]|\[::1\]:1878[90]'; then
     pass "OpenClaw is bound to loopback only"
   else
     warn "OpenClaw ports are listening on non-public interfaces:\n$openclaw_ports"
@@ -190,7 +190,7 @@ if command -v ss >/dev/null 2>&1; then
   ollama_port="$(ss -ltnH '( sport = :11434 )' 2>/dev/null || true)"
   if [[ -z "$ollama_port" ]]; then
     warn "Ollama port (11434) is not listening"
-  elif echo "$ollama_port" | rg -q '0\.0\.0\.0:11434|\[::\]:11434'; then
+  elif echo "$ollama_port" | grep -Eq '0\.0\.0\.0:11434|\[::\]:11434'; then
     fail "Ollama appears publicly bound; keep it localhost-only:\n$ollama_port"
   else
     pass "Ollama port (11434) is not publicly exposed"
@@ -213,11 +213,30 @@ else
 fi
 
 if command -v systemctl >/dev/null 2>&1; then
-  if systemctl list-unit-files 2>/dev/null | rg -q '^openclaw-gateway\.service'; then
+  if id -u openclaw >/dev/null 2>&1; then
+    if id -nG openclaw | tr ' ' '\n' | grep -Fxq 'docker'; then
+      pass "openclaw user is a member of docker group"
+    else
+      fail "openclaw user is not in docker group"
+    fi
+  else
+    warn "openclaw user is not present"
+  fi
+
+  if systemctl list-unit-files 2>/dev/null | grep -Eq '^openclaw-gateway\.service([[:space:]]|$)'; then
     if run_with_optional_sudo systemctl is-active --quiet openclaw-gateway 2>/dev/null; then
       pass "openclaw-gateway service is active"
     else
       warn "openclaw-gateway service is installed but not active"
+    fi
+
+    openclaw_groups="$(run_with_optional_sudo systemctl show openclaw-gateway -p SupplementaryGroups --value 2>/dev/null || true)"
+    if [[ -z "$openclaw_groups" ]]; then
+      warn "Could not read openclaw-gateway supplementary groups"
+    elif echo "$openclaw_groups" | grep -Eq '(^| )docker( |$)'; then
+      pass "openclaw-gateway service has docker supplementary group"
+    else
+      fail "openclaw-gateway service is missing docker supplementary group"
     fi
   else
     warn "openclaw-gateway service is not installed"

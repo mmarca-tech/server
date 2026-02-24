@@ -1,6 +1,6 @@
 # Home Server Setup Guide (Debian 12)
 
-This guide configures your server so apps are reachable only via subdomains of `ivantili.site`, while OpenClaw is host-native and not publicly reachable.
+This guide configures your server so apps are reachable only via subdomains of `example.com`, while OpenClaw is host-native and not publicly reachable.
 
 ## 0. Preflight (Do This First)
 
@@ -12,7 +12,7 @@ timedatectl
 ```
 
 3. Confirm you can SSH using keys before hardening SSH config.
-4. Confirm your DNS provider allows creating `A` records for `ivantili.site`.
+4. Confirm your DNS provider allows creating `A` records for `example.com`.
 5. Confirm your router supports NAT loopback/hairpin NAT, or plan local DNS overrides for LAN clients.
 
 Verify the host has the expected LAN address:
@@ -185,6 +185,8 @@ sudo systemctl restart openclaw-gateway
 
 The installed `openclaw-gateway` systemd unit binds to `loopback` by default to keep it host-local.
 OpenClaw runtime data is stored in `/srv/openclaw` (not `/var/lib/openclaw`) to avoid filling the small `/var` partition.
+The installer also grants Docker access to the `openclaw` service user (`docker` group + systemd supplementary group), so OpenClaw Docker tools work without manual overrides.
+If OpenClaw was already installed on the host, rerun `./scripts/install-openclaw-host.sh` once to apply these fixes.
 
 ### 1.6 Configure OpenAI cloud for OpenClaw/ClawdBot (recommended)
 
@@ -242,19 +244,19 @@ make clawdbot-local
 
 Edit `proxy/.env`:
 
-- `ACME_EMAIL=you@ivantili.site`
-- `ROOT_DOMAIN=ivantili.site`
+- `ACME_EMAIL=admin@example.com`
+- `ROOT_DOMAIN=example.com`
 
 ### 2.2 Keep only app routes in Caddy
 
 `proxy/Caddyfile` should include app routes such as:
 
-- `nc.ivantili.site`
-- `immich.ivantili.site`
-- `jellyfin.ivantili.site`
-- `jellyseerr.ivantili.site`
-- `calibre.ivantili.site`
-- `mollysocket.ivantili.site`
+- `nc.example.com`
+- `immich.example.com`
+- `jellyfin.example.com`
+- `jellyseerr.example.com`
+- `calibre.example.com`
+- `mollysocket.example.com`
 
 OpenClaw route must not exist in Caddy.
 
@@ -268,14 +270,14 @@ OpenClaw route must not exist in Caddy.
 
 ```bash
 ./scripts/logs.sh proxy
-curl -I https://nc.ivantili.site
-curl -I https://immich.ivantili.site
+curl -I https://nc.example.com
+curl -I https://immich.example.com
 ```
 
 Confirm Caddy header hardening is active:
 
 ```bash
-curl -I https://nc.ivantili.site | rg -n 'strict-transport-security|x-content-type-options|x-frame-options' -i
+curl -I https://nc.example.com | rg -n 'strict-transport-security|x-content-type-options|x-frame-options' -i
 ```
 
 ## 3. Router + Firewall Ports
@@ -304,7 +306,7 @@ sudo ufw status verbose
 
 If your LAN subnet differs from `192.168.1.0/24`, adjust that SSH rule accordingly.
 
-## 4. DNS Setup for ivantili.site
+## 4. DNS Setup for example.com
 
 Create `A` records pointing to your WAN IP:
 
@@ -322,9 +324,9 @@ Do not create any DNS record for OpenClaw.
 After creating DNS records, verify propagation:
 
 ```bash
-dig +short nc.ivantili.site
-dig +short immich.ivantili.site
-dig +short jellyfin.ivantili.site
+dig +short nc.example.com
+dig +short immich.example.com
+dig +short jellyfin.example.com
 ```
 
 ## 5. Host Hardening
@@ -374,13 +376,13 @@ sudo chmod 640 /etc/openclaw/openclaw.env
 
 ### 7.1 Nextcloud
 
-1. Complete first-run web setup at `https://nc.ivantili.site`.
+1. Complete first-run web setup at `https://nc.example.com`.
 2. In Nextcloud settings, ensure Redis/file locking and DB are healthy.
 3. Optional: switch background jobs from AJAX to Cron.
 
 ### 7.2 Immich
 
-1. Open `https://immich.ivantili.site`.
+1. Open `https://immich.example.com`.
 2. Confirm upload works and machine learning jobs run.
 3. Check logs for DB/Redis/ML connectivity:
 
@@ -398,7 +400,7 @@ sudo chmod 640 /etc/openclaw/openclaw.env
 To keep OpenClaw accessible only through Telegram chat integrations:
 
 1. Run OpenClaw as host service (`openclaw-gateway`), not Docker.
-2. Do not create `claw.ivantili.site` DNS.
+2. Do not create `claw.example.com` DNS.
 3. Do not add an OpenClaw route in `proxy/Caddyfile`.
 4. Do not forward router ports `18789` or `18790`.
 5. Keep firewall deny rules for `18789/tcp` and `18790/tcp`.

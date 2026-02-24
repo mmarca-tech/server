@@ -92,6 +92,14 @@ make bootstrap
 make init
 ```
 
+Single-command guided setup (with mandatory confirmations at each manual step like router/DNS/env edits):
+
+```bash
+./scripts/master-setup.sh
+# or
+make master-setup
+```
+
 ## 4. Start all stacks
 
 ```bash
@@ -113,6 +121,8 @@ make up
 This installs OpenClaw globally with `npm`, creates `/etc/openclaw/openclaw.env`, installs `openclaw-gateway` as a systemd service, and starts it.
 The systemd unit binds OpenClaw to `loopback` by default (not LAN-exposed), which matches the Telegram-only access model.
 OpenClaw runtime files are stored under `/srv/openclaw`.
+The installer also ensures `openclaw` has Docker access (`docker` group + systemd supplementary group), so Docker-backed tools work without manual `systemctl edit`.
+If OpenClaw was installed earlier, rerun `./scripts/install-openclaw-host.sh` once to apply these service/group fixes.
 
 Then edit:
 
