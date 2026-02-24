@@ -112,6 +112,7 @@ make up
 
 This installs OpenClaw globally with `npm`, creates `/etc/openclaw/openclaw.env`, installs `openclaw-gateway` as a systemd service, and starts it.
 The systemd unit binds OpenClaw to `loopback` by default (not LAN-exposed), which matches the Telegram-only access model.
+OpenClaw runtime files are stored under `/srv/openclaw`.
 
 Then edit:
 
@@ -139,6 +140,8 @@ Use a local small model (instead of OpenAI/cloud) for OpenClaw/ClawdBot:
 ./scripts/install-local-llm.sh
 ./scripts/connect-clawdbot-local.sh
 ```
+
+Default local model wiring uses alias `openai/qwen2.5:3b` backed by Ollama.
 
 Equivalent Make targets:
 

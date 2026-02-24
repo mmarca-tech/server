@@ -184,6 +184,7 @@ sudo systemctl restart openclaw-gateway
 ```
 
 The installed `openclaw-gateway` systemd unit binds to `loopback` by default to keep it host-local.
+OpenClaw runtime data is stored in `/srv/openclaw` (not `/var/lib/openclaw`) to avoid filling the small `/var` partition.
 
 ### 1.6 Optional: local small model for OpenClaw/ClawdBot
 
@@ -202,8 +203,8 @@ Connect OpenClaw to local OpenAI-compatible endpoint (`127.0.0.1:11434`):
 You can override model/base URL when needed:
 
 ```bash
-MODEL=llama3.2:3b ./scripts/install-local-llm.sh
-MODEL=llama3.2:3b BASE_URL=http://127.0.0.1:11434/v1 ./scripts/connect-clawdbot-local.sh
+BASE_MODEL=llama3.2:3b MODEL_ALIAS=openai/llama3.2:3b ./scripts/install-local-llm.sh
+MODEL=openai/llama3.2:3b BASE_URL=http://127.0.0.1:11434/v1 ./scripts/connect-clawdbot-local.sh
 ```
 
 Equivalent Make targets:

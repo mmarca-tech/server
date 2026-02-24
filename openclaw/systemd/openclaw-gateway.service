@@ -7,7 +7,8 @@ Wants=network-online.target
 Type=simple
 User=openclaw
 Group=openclaw
-WorkingDirectory=/var/lib/openclaw
+WorkingDirectory=/srv/openclaw
+Environment=HOME=/srv/openclaw
 EnvironmentFile=/etc/openclaw/openclaw.env
 ExecStart=/usr/bin/env openclaw gateway --bind loopback --port 18789
 Restart=always
@@ -24,7 +25,7 @@ LockPersonality=true
 RestrictRealtime=true
 RestrictSUIDSGID=true
 RemoveIPC=true
-ReadWritePaths=/var/lib/openclaw
+ReadWritePaths=/srv/openclaw
 
 [Install]
 WantedBy=multi-user.target

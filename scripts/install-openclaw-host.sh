@@ -36,11 +36,20 @@ sudo npm install -g openclaw@latest
 
 if ! id -u openclaw >/dev/null 2>&1; then
   echo "Creating system user: openclaw"
-  sudo useradd --system --create-home --home-dir /var/lib/openclaw --shell /usr/sbin/nologin openclaw
+  sudo useradd --system --create-home --home-dir /srv/openclaw --shell /usr/sbin/nologin openclaw
+else
+  # Ensure existing installs use /srv/openclaw as home to avoid filling /var.
+  sudo /usr/sbin/usermod -d /srv/openclaw openclaw || true
 fi
 
-sudo mkdir -p /var/lib/openclaw
-sudo chown -R openclaw:openclaw /var/lib/openclaw
+if [[ -d /var/lib/openclaw ]] && [[ ! -L /var/lib/openclaw ]]; then
+  echo "Migrating existing OpenClaw data from /var/lib/openclaw to /srv/openclaw"
+  sudo mkdir -p /srv/openclaw
+  sudo rsync -aHAX --delete /var/lib/openclaw/ /srv/openclaw/ || true
+fi
+
+sudo mkdir -p /srv/openclaw
+sudo chown -R openclaw:openclaw /srv/openclaw
 
 sudo mkdir -p /etc/openclaw
 if [[ ! -f /etc/openclaw/openclaw.env ]]; then

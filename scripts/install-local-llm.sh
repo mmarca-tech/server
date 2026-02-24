@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MODEL="${MODEL:-qwen2.5:3b}"
+BASE_MODEL="${BASE_MODEL:-qwen2.5:3b}"
+MODEL_ALIAS="${MODEL_ALIAS:-openai/qwen2.5:3b}"
 
 if [[ "${EUID}" -eq 0 ]]; then
   SUDO=""
@@ -33,8 +34,11 @@ fi
 echo "Enabling Ollama service"
 as_root systemctl enable --now ollama
 
-echo "Pulling model: $MODEL"
-ollama pull "$MODEL"
+echo "Pulling model: $BASE_MODEL"
+ollama pull "$BASE_MODEL"
+
+echo "Creating OpenAI-compatible model alias: $MODEL_ALIAS"
+ollama cp "$BASE_MODEL" "$MODEL_ALIAS"
 
 echo "Verifying local inference endpoint"
 if command -v curl >/dev/null 2>&1; then
@@ -43,5 +47,6 @@ fi
 
 echo
 echo "Local model runtime ready."
-echo "Installed model: $MODEL"
+echo "Installed base model: $BASE_MODEL"
+echo "Installed alias model: $MODEL_ALIAS"
 echo "Next step: ./scripts/connect-clawdbot-local.sh"

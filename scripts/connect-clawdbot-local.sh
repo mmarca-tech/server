@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MODEL="${MODEL:-qwen2.5:3b}"
+MODEL="${MODEL:-openai/qwen2.5:3b}"
 BASE_URL="${BASE_URL:-http://127.0.0.1:11434/v1}"
 ENV_FILE="${ENV_FILE:-/etc/openclaw/openclaw.env}"
 
