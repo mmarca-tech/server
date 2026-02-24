@@ -6,6 +6,13 @@ cd "$ROOT_DIR"
 
 stacks=(nextcloud immich ha jellyfin jellyseerr calibre mollysocket proxy)
 
+if ! docker network inspect proxy >/dev/null 2>&1; then
+  echo "Creating external Docker network: proxy"
+  docker network create proxy >/dev/null
+else
+  echo "Docker network already exists: proxy"
+fi
+
 for stack in "${stacks[@]}"; do
   if [[ ! -f "$stack/.env" ]]; then
     echo "Missing $stack/.env"
