@@ -132,6 +132,20 @@ make openclaw-install
 make openclaw-onboard
 ```
 
+Use a local small model (instead of OpenAI/cloud) for OpenClaw/ClawdBot:
+
+```bash
+./scripts/install-local-llm.sh
+./scripts/connect-clawdbot-local.sh
+```
+
+Equivalent Make targets:
+
+```bash
+make local-llm-install
+make clawdbot-local
+```
+
 Run hardening audit checks:
 
 ```bash

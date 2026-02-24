@@ -184,6 +184,15 @@ if command -v ss >/dev/null 2>&1; then
   else
     pass "Docker remote API ports (2375/2376) are not listening"
   fi
+
+  ollama_port="$(ss -ltnH '( sport = :11434 )' 2>/dev/null || true)"
+  if [[ -z "$ollama_port" ]]; then
+    warn "Ollama port (11434) is not listening"
+  elif echo "$ollama_port" | rg -q '0\.0\.0\.0:11434|\[::\]:11434'; then
+    fail "Ollama appears publicly bound; keep it localhost-only:\n$ollama_port"
+  else
+    pass "Ollama port (11434) is not publicly exposed"
+  fi
 else
   warn "Could not run socket checks because ss is unavailable"
 fi

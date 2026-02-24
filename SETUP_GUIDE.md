@@ -183,6 +183,34 @@ sudo systemctl restart openclaw-gateway
 ./scripts/openclaw-onboard.sh
 ```
 
+### 1.6 Optional: local small model for OpenClaw/ClawdBot
+
+Install local model runtime and pull a small model:
+
+```bash
+./scripts/install-local-llm.sh
+```
+
+Connect OpenClaw to local OpenAI-compatible endpoint (`127.0.0.1:11434`):
+
+```bash
+./scripts/connect-clawdbot-local.sh
+```
+
+You can override model/base URL when needed:
+
+```bash
+MODEL=llama3.2:3b ./scripts/install-local-llm.sh
+MODEL=llama3.2:3b BASE_URL=http://127.0.0.1:11434/v1 ./scripts/connect-clawdbot-local.sh
+```
+
+Equivalent Make targets:
+
+```bash
+make local-llm-install
+make clawdbot-local
+```
+
 ## 2. Proxy Setup (Caddy)
 
 ### 2.1 Configure domain variables
