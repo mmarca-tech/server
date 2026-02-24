@@ -87,6 +87,37 @@ if [[ -d /srv/openclaw/.openclaw ]]; then
   fi
 fi
 
+# Ensure persisted OpenClaw runtime config points to local OpenAI-compatible endpoint.
+runtime_cfg="/srv/openclaw/.openclaw/openclaw.json"
+if [[ -f "$runtime_cfg" ]]; then
+  as_root python3 - "$runtime_cfg" "$MODEL" "$BASE_URL" <<'PY'
+import json
+import sys
+
+cfg_path, model, base_url = sys.argv[1], sys.argv[2], sys.argv[3]
+with open(cfg_path, "r", encoding="utf-8") as f:
+    cfg = json.load(f)
+
+agents = cfg.setdefault("agents", {}).setdefault("defaults", {})
+agents.setdefault("model", {})["primary"] = model
+models = agents.setdefault("models", {})
+models.setdefault(model, {})
+
+# Keep runtime data off /var partition.
+if agents.get("workspace", "").startswith("/var/lib/openclaw/"):
+    agents["workspace"] = "/srv/openclaw/.openclaw/workspace"
+
+providers = cfg.setdefault("providers", {}).setdefault("openai", {})
+providers["apiKey"] = "local"
+providers["baseURL"] = base_url
+
+with open(cfg_path, "w", encoding="utf-8") as f:
+    json.dump(cfg, f, indent=2)
+    f.write("\n")
+PY
+  echo "Patched runtime provider/model config in $runtime_cfg"
+fi
+
 as_root chown root:openclaw "$ENV_FILE"
 as_root chmod 640 "$ENV_FILE"
 
