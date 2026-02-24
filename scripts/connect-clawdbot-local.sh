@@ -110,7 +110,9 @@ if agents.get("workspace", "").startswith("/var/lib/openclaw/"):
 
 providers = cfg.setdefault("providers", {}).setdefault("openai", {})
 providers["apiKey"] = "local"
-providers["baseURL"] = base_url
+providers["baseUrl"] = base_url
+# Cleanup incorrect legacy key shape.
+providers.pop("baseURL", None)
 
 with open(cfg_path, "w", encoding="utf-8") as f:
     json.dump(cfg, f, indent=2)
