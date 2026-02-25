@@ -1,0 +1,24 @@
+services:
+  navidrome:
+    image: ${NAVIDROME_IMAGE}
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    env_file:
+      - .env
+    environment:
+      ND_LOGLEVEL: ${ND_LOGLEVEL:-info}
+      ND_SCANSCHEDULE: ${ND_SCANSCHEDULE:-1h}
+      ND_ADDRESS: ${ND_ADDRESS:-0.0.0.0}
+      ND_PORT: ${ND_PORT:-4533}
+      ND_DATAFOLDER: ${ND_DATAFOLDER:-/data}
+      ND_MUSICFOLDER: ${ND_MUSICFOLDER:-/music}
+    volumes:
+      - /srv/navidrome/data:/data
+      - /srv/navidrome/music:/music:ro
+
+networks:
+  proxy:
+    external: true

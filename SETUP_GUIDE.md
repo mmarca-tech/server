@@ -62,6 +62,8 @@ Target `/srv` tree used by this repo:
  ├── jellyfin/
  ├── jellyseerr/
  ├── calibre/
+ ├── navidrome/
+ ├── audiobookshelf/
  ├── mollysocket/
  ├── homeassistant/
  ├── databases/
@@ -256,6 +258,8 @@ Edit `proxy/.env`:
 - `jellyfin.example.com`
 - `jellyseerr.example.com`
 - `calibre.example.com`
+- `navidrome.example.com`
+- `audiobookshelf.example.com`
 - `mollysocket.example.com`
 
 OpenClaw route must not exist in Caddy.
@@ -344,6 +348,8 @@ Create `A` records pointing to your WAN IP:
 - `jellyfin`
 - `jellyseerr`
 - `calibre`
+- `navidrome`
+- `audiobookshelf`
 - `mollysocket`
 - optional `ha`
 
@@ -418,7 +424,7 @@ sudo chmod 640 /etc/openclaw/openclaw.env
 ./scripts/logs.sh immich
 ```
 
-### 7.3 Jellyfin / Jellyseerr / Calibre / Mollysocket
+### 7.3 Jellyfin / Jellyseerr / Calibre / Navidrome / Audiobookshelf / Mollysocket
 
 1. Confirm each app is reachable via HTTPS subdomain.
 2. Confirm media/library paths are mounted and readable where required.

@@ -1,0 +1,21 @@
+services:
+  audiobookshelf:
+    image: ${AUDIOBOOKSHELF_IMAGE}
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    env_file:
+      - .env
+    environment:
+      TZ: ${TZ:-UTC}
+    volumes:
+      - /srv/audiobookshelf/config:/config
+      - /srv/audiobookshelf/metadata:/metadata
+      - /srv/audiobookshelf/audiobooks:/audiobooks:ro
+      - /srv/audiobookshelf/podcasts:/podcasts:ro
+
+networks:
+  proxy:
+    external: true
