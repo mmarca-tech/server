@@ -4,13 +4,8 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    networks:
-      - proxy
+    network_mode: host
     env_file:
       - .env
     volumes:
       - /srv/mollysocket/data:/data
-
-networks:
-  proxy:
-    external: true

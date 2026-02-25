@@ -4,14 +4,9 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    networks:
-      - proxy
+    network_mode: host
     env_file:
       - .env
     volumes:
       - /srv/calibre/config:/config
       - /srv/calibre/library:/books
-
-networks:
-  proxy:
-    external: true

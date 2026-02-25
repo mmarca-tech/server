@@ -17,35 +17,35 @@
 
 nc.{$ROOT_DOMAIN} {
   import secure_headers
-  reverse_proxy nextcloud:80
+  reverse_proxy 127.0.0.1:11080
 }
 
 immich.{$ROOT_DOMAIN} {
   import secure_headers
-  reverse_proxy immich-server:2283
+  reverse_proxy 127.0.0.1:2283
 }
 
 jellyfin.{$ROOT_DOMAIN} {
   import secure_headers
-  reverse_proxy jellyfin:8096
+  reverse_proxy 127.0.0.1:8096
 }
 
 jellyseerr.{$ROOT_DOMAIN} {
   import secure_headers
-  reverse_proxy jellyseerr:5055
+  reverse_proxy 127.0.0.1:5055
 }
 
 calibre.{$ROOT_DOMAIN} {
   import secure_headers
-  reverse_proxy calibre-web:8083
+  reverse_proxy 127.0.0.1:8083
 }
 
 mollysocket.{$ROOT_DOMAIN} {
   import secure_headers
-  reverse_proxy mollysocket:8020
+  reverse_proxy 127.0.0.1:8020
 }
 
 # Optional Home Assistant through Caddy while Home Assistant runs in host network mode.
 # ha.{$ROOT_DOMAIN} {
-#   reverse_proxy host.docker.internal:8123
+#   reverse_proxy 127.0.0.1:8123
 # }
