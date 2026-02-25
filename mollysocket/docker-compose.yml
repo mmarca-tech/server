@@ -1,6 +1,6 @@
 services:
   mollysocket:
-    image: ${MOLLYSOCKET_IMAGE}
+    image: ghcr.io/mollyim/mollysocket:latest
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true

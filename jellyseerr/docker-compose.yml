@@ -1,6 +1,6 @@
 services:
   jellyseerr:
-    image: ${JELLYSEERR_IMAGE}
+    image: fallenbagel/jellyseerr:latest
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
