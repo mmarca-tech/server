@@ -10,10 +10,17 @@ ROOT_DOMAIN="${ROOT_DOMAIN:-example.com}"
 ACME_EMAIL="${ACME_EMAIL:-admin@example.com}"
 OPENCLAW_BACKEND="${OPENCLAW_BACKEND:-openai}"
 OPENCLAW_MODEL="${OPENCLAW_MODEL:-}"
+EXPOSE_HOMEASSISTANT="${EXPOSE_HOMEASSISTANT:-false}"
 
 if [[ "${OPENCLAW_BACKEND}" != "openai" && "${OPENCLAW_BACKEND}" != "local" && "${OPENCLAW_BACKEND}" != "skip" ]]; then
   echo "Invalid OPENCLAW_BACKEND=${OPENCLAW_BACKEND}"
   echo "Valid values: openai, local, skip"
+  exit 1
+fi
+
+if [[ "${EXPOSE_HOMEASSISTANT}" != "true" && "${EXPOSE_HOMEASSISTANT}" != "false" ]]; then
+  echo "Invalid EXPOSE_HOMEASSISTANT=${EXPOSE_HOMEASSISTANT}"
+  echo "Valid values: true, false"
   exit 1
 fi
 
@@ -106,6 +113,7 @@ openclaw_configure_backend() {
 echo "Master setup starting in: $ROOT_DIR"
 echo "Using LAN_IP=${LAN_IP}, LAN_CIDR=${LAN_CIDR}, ROOT_DOMAIN=${ROOT_DOMAIN}, ACME_EMAIL=${ACME_EMAIL}"
 echo "OpenClaw backend: ${OPENCLAW_BACKEND}"
+echo "Expose Home Assistant publicly: ${EXPOSE_HOMEASSISTANT}"
 
 manual_checkpoint \
   "Preflight confirmations" \
@@ -161,6 +169,14 @@ manual_checkpoint \
   "Finalize OpenClaw onboarding" \
   "Complete the onboarding URL/token flow printed by the previous command." \
   "Validate your Telegram integration after onboarding."
+
+if [[ "$EXPOSE_HOMEASSISTANT" == "true" ]]; then
+  manual_checkpoint \
+    "Home Assistant public access" \
+    "Confirm you want Home Assistant exposed at https://ha.${ROOT_DOMAIN} through Caddy." \
+    "Ensure DNS A record for ha.${ROOT_DOMAIN} exists."
+  run_step "Enable Home Assistant public proxy settings" ./scripts/enable-ha-public.sh
+fi
 
 run_step "Run security checks" env LAN_IP="$LAN_IP" LAN_CIDR="$LAN_CIDR" ./scripts/security-check.sh
 

@@ -62,6 +62,28 @@ else
   fail "Caddy secure headers policy is missing"
 fi
 
+if grep -Eq '^ha\.\{\$ROOT_DOMAIN\}[[:space:]]*\{' proxy/Caddyfile; then
+  ha_cfg="/srv/homeassistant/config/configuration.yaml"
+  if [[ ! -f "$ha_cfg" ]]; then
+    fail "Home Assistant public route is enabled but $ha_cfg is missing"
+  else
+    if grep -Eq '^[[:space:]]*use_x_forwarded_for:[[:space:]]*true[[:space:]]*$' "$ha_cfg"; then
+      pass "Home Assistant use_x_forwarded_for is enabled"
+    else
+      fail "Home Assistant use_x_forwarded_for is not enabled"
+    fi
+
+    if grep -Eq '^[[:space:]]*trusted_proxies:[[:space:]]*$' "$ha_cfg" && \
+       grep -Eq '^[[:space:]]*-[[:space:]]*172\.16\.0\.0/12[[:space:]]*$' "$ha_cfg"; then
+      pass "Home Assistant trusted_proxies includes 172.16.0.0/12"
+    else
+      fail "Home Assistant trusted_proxies is missing 172.16.0.0/12 while public route is enabled"
+    fi
+  fi
+else
+  warn "Home Assistant public Caddy route is not enabled; proxy trust checks skipped"
+fi
+
 compose_mutable="$(grep -nHE 'image:.*:(latest|release|stable)\b' */docker-compose.yml 2>/dev/null || true)"
 if [[ -n "$compose_mutable" ]]; then
   fail "Mutable image tags found in compose files:\n$compose_mutable"

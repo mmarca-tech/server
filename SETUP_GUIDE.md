@@ -280,6 +280,34 @@ Confirm Caddy header hardening is active:
 curl -I https://nc.example.com | rg -n 'strict-transport-security|x-content-type-options|x-frame-options' -i
 ```
 
+### 2.5 Optional: expose Home Assistant via Caddy
+
+Run:
+
+```bash
+./scripts/enable-ha-public.sh
+```
+
+This helper script:
+
+- Enables the `ha.{$ROOT_DOMAIN}` block in `proxy/Caddyfile`
+- Updates `/srv/homeassistant/config/configuration.yaml` with proxy-safe settings:
+  - `use_x_forwarded_for: true`
+  - `trusted_proxies: [172.16.0.0/12]`
+- Restarts Home Assistant and reloads the proxy stack
+
+Then ensure DNS includes `ha` and test:
+
+```bash
+curl -I https://ha.example.com
+```
+
+If you edit Home Assistant config manually, use:
+
+```bash
+sudoedit /srv/homeassistant/config/configuration.yaml
+```
+
 ## 3. Router + Firewall Ports
 
 ### 3.1 Router port forwards (only these)

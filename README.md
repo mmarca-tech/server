@@ -100,6 +100,12 @@ Single-command guided setup (with mandatory confirmations at each manual step li
 make master-setup
 ```
 
+Optional: enable public Home Assistant route during master setup:
+
+```bash
+EXPOSE_HOMEASSISTANT=true ./scripts/master-setup.sh
+```
+
 ## 4. Start all stacks
 
 ```bash
@@ -263,5 +269,13 @@ make down
 ```
 - All public apps are routed by Caddy over the external Docker network `proxy`.
 - OpenClaw is host-native and should not be exposed through Caddy or public DNS.
-- Home Assistant runs with `network_mode: host` for LAN discovery. If you want to proxy it, uncomment the `ha` block in `proxy/Caddyfile`.
+- Home Assistant runs with `network_mode: host` for LAN discovery.
+- To expose Home Assistant through Caddy, run `./scripts/enable-ha-public.sh` (or `make ha-public-enable`).
+- The helper script updates `/srv/homeassistant/config/configuration.yaml` with:
+```yaml
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 172.16.0.0/12
+```
 - `scripts/init-env.sh` now syncs newly added keys from `*.env.example` into existing `.env` files.
