@@ -40,9 +40,14 @@ calibre.{$ROOT_DOMAIN} {
   reverse_proxy calibre-web:8083
 }
 
-mollysocket.{$ROOT_DOMAIN} {
+navidrome.{$ROOT_DOMAIN} {
   import secure_headers
-  reverse_proxy mollysocket:8020
+  reverse_proxy navidrome:4533
+}
+
+audiobookshelf.{$ROOT_DOMAIN} {
+  import secure_headers
+  reverse_proxy audiobookshelf:80
 }
 
 # Optional Home Assistant through Caddy while Home Assistant runs in host network mode.

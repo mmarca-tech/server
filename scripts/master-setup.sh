@@ -151,7 +151,7 @@ manual_checkpoint \
 
 manual_checkpoint \
   "DNS records required" \
-  "Create A records to your WAN IP for: @, nc, immich, jellyfin, jellyseerr, calibre, mollysocket (and optional ha)." \
+  "Create A records to your WAN IP for: @, nc, immich, jellyfin, jellyseerr, calibre, navidrome, audiobookshelf, mollysocket (and optional ha)." \
   "Do NOT create any DNS record for OpenClaw."
 
 run_step "Start all Docker stacks" ./scripts/up-all.sh
@@ -186,3 +186,5 @@ echo "Validate app endpoints:"
 echo " - https://nc.${ROOT_DOMAIN}"
 echo " - https://immich.${ROOT_DOMAIN}"
 echo " - https://jellyfin.${ROOT_DOMAIN}"
+echo " - https://navidrome.${ROOT_DOMAIN}"
+echo " - https://audiobookshelf.${ROOT_DOMAIN}"

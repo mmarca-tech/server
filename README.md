@@ -11,6 +11,8 @@ This repository contains Docker Compose stacks for:
 - Jellyfin
 - Jellyseerr
 - Calibre-Web
+- Navidrome
+- Audiobookshelf
 - Mollysocket
 
 And host-native (non-Docker):
@@ -70,6 +72,8 @@ Create DNS A records to your WAN IP:
 - `jellyfin`
 - `jellyseerr`
 - `calibre`
+- `navidrome`
+- `audiobookshelf`
 - `mollysocket`
 - optional `ha`
 
@@ -245,6 +249,8 @@ make down
 - `jellyfin/` Jellyfin media server
 - `jellyseerr/` Jellyseerr request manager
 - `calibre/` Calibre-Web
+- `navidrome/` Navidrome music server
+- `audiobookshelf/` Audiobookshelf audiobook server
 - `mollysocket/` Mollysocket
 - `openclaw/` OpenClaw host config (`/etc/openclaw/openclaw.env`) + systemd unit template
 - `scripts/` operational helpers
@@ -262,6 +268,8 @@ make down
  ├── jellyfin/
  ├── jellyseerr/
  ├── calibre/
+ ├── navidrome/
+ ├── audiobookshelf/
  ├── mollysocket/
  ├── homeassistant/
  ├── databases/
