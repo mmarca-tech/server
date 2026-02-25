@@ -1,15 +1,43 @@
 services:
   mollysocket:
-    image: ghcr.io/mollyim/mollysocket:latest
+    image: ${MOLLYSOCKET_IMAGE}
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
+    cap_drop:
+      - ALL
     networks:
       - proxy
     env_file:
       - .env
+    environment:
+      MOLLY_HOST: ${MOLLY_HOST:-0.0.0.0}
+      MOLLY_PORT: ${MOLLY_PORT:-8020}
+      MOLLY_DB: ${MOLLY_DB:-/data/ms.sqlite}
+      MOLLY_WEBSERVER: ${MOLLY_WEBSERVER:-true}
+      RUST_LOG: ${RUST_LOG:-info}
     volumes:
       - /srv/mollysocket/data:/data
+
+  mollysocket-cli:
+    image: ${MOLLYSOCKET_IMAGE}
+    profiles:
+      - tools
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - proxy
+    env_file:
+      - .env
+    environment:
+      MOLLY_DB: ${MOLLY_DB:-/data/ms.sqlite}
+      RUST_LOG: ${RUST_LOG:-info}
+    volumes:
+      - /srv/mollysocket/data:/data
+    entrypoint:
+      - mollysocket
 
 networks:
   proxy:
