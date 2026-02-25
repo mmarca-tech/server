@@ -103,11 +103,11 @@ enable_ha_caddy_route() {
   awk '
     BEGIN { in_ha=0 }
     /^ha\.\{\$ROOT_DOMAIN\}[[:space:]]*\{/ { print; in_ha=1; next }
-    in_ha && /^[[:space:]]*reverse_proxy[[:space:]]+127\.0\.0\.1:8123[[:space:]]*$/ { print; next }
+    in_ha && /^[[:space:]]*reverse_proxy[[:space:]]+host\.docker\.internal:8123[[:space:]]*$/ { print; next }
     in_ha && /^\}[[:space:]]*$/ { print; in_ha=0; next }
 
     /^# ha\.\{\$ROOT_DOMAIN\}[[:space:]]*\{/ { sub(/^# /, ""); print; in_ha=1; next }
-    in_ha && /^#   reverse_proxy 127\.0\.0\.1:8123[[:space:]]*$/ { sub(/^# /, ""); print; next }
+    in_ha && /^#   reverse_proxy host\.docker\.internal:8123[[:space:]]*$/ { sub(/^# /, ""); print; next }
     in_ha && /^# \}[[:space:]]*$/ { sub(/^# /, ""); print; in_ha=0; next }
 
     { print }

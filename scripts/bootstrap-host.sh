@@ -39,4 +39,11 @@ echo "Creating app data directories under $SRV_ROOT"
 sudo mkdir -p "${directories[@]}"
 sudo chown -R "$USER:$USER" "${directories[@]}"
 
+if ! docker network inspect proxy >/dev/null 2>&1; then
+  echo "Creating external Docker network: proxy"
+  docker network create proxy >/dev/null
+else
+  echo "Docker network already exists: proxy"
+fi
+
 echo "Host bootstrap complete."

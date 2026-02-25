@@ -4,10 +4,15 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    network_mode: host
+    networks:
+      - proxy
     volumes:
       - /srv/jellyseerr/config:/app/config
     env_file:
       - .env
     environment:
       LOG_LEVEL: info
+
+networks:
+  proxy:
+    external: true

@@ -11,7 +11,8 @@ services:
       - .env
     volumes:
       - /srv/databases/immich-postgres:/var/lib/postgresql/data
-    network_mode: host
+    networks:
+      - internal
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U immich -d immich"]
       interval: 30s
@@ -23,10 +24,10 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    command: ["redis-server", "--bind", "127.0.0.1", "--port", "6380"]
-    network_mode: host
+    networks:
+      - internal
     healthcheck:
-      test: ["CMD", "redis-cli", "-p", "6380", "ping"]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 30s
       timeout: 5s
       retries: 5
@@ -44,16 +45,17 @@ services:
     env_file:
       - .env
     environment:
-      DB_HOSTNAME: 127.0.0.1
+      DB_HOSTNAME: immich-db
       DB_USERNAME: immich
       DB_DATABASE_NAME: immich
-      REDIS_HOSTNAME: 127.0.0.1
-      REDIS_PORT: 6380
-      IMMICH_MACHINE_LEARNING_URL: http://127.0.0.1:3003
+      REDIS_HOSTNAME: immich-redis
+      IMMICH_MACHINE_LEARNING_URL: http://immich-machine-learning:3003
     volumes:
       - /srv/immich/library:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
-    network_mode: host
+    networks:
+      - proxy
+      - internal
 
   immich-machine-learning:
     image: ${IMMICH_ML_IMAGE}
@@ -62,4 +64,11 @@ services:
       - no-new-privileges:true
     volumes:
       - /srv/immich/model-cache:/cache
-    network_mode: host
+    networks:
+      - internal
+
+networks:
+  proxy:
+    external: true
+  internal:
+    driver: bridge
