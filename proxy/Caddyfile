@@ -46,6 +46,6 @@ mollysocket.{$ROOT_DOMAIN} {
 }
 
 # Optional Home Assistant through Caddy while Home Assistant runs in host network mode.
-# ha.{$ROOT_DOMAIN} {
-#   reverse_proxy host.docker.internal:8123
-# }
+ha.{$ROOT_DOMAIN} {
+  reverse_proxy host.docker.internal:8123
+}
