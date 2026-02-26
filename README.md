@@ -74,8 +74,8 @@ Create DNS A records to your WAN IP:
 - `calibre`
 - `navidrome`
 - `audiobookshelf`
-- `mollysocket`
 - optional `ha`
+- optional `mollysocket` (only if you intentionally expose it)
 
 ## 3. Clone and initialize
 
@@ -94,6 +94,7 @@ Equivalent Make targets:
 
 ```bash
 make bootstrap
+make media
 make init
 ```
 
@@ -121,6 +122,13 @@ Equivalent Make target:
 
 ```bash
 make up
+```
+
+`up-all.sh` waits for each stack to become healthy before moving to the next one.
+Override wait timeout (seconds) when needed:
+
+```bash
+COMPOSE_WAIT_TIMEOUT=1200 ./scripts/up-all.sh
 ```
 
 ## 5. Install OpenClaw on the host (non-Docker)
@@ -212,6 +220,25 @@ make pull
 make up
 ```
 
+Recover unremovable stale/ghost containers:
+
+```bash
+# Dry-run detection (safe)
+./scripts/docker-ghost-cleanup.sh
+
+# Apply cleanup (restarts docker.service/docker.socket)
+sudo ./scripts/docker-ghost-cleanup.sh --apply
+
+# Optional: include full prune
+sudo ./scripts/docker-ghost-cleanup.sh --apply --prune
+```
+
+Target specific IDs (instead of auto-detecting all exited containers):
+
+```bash
+sudo ./scripts/docker-ghost-cleanup.sh --apply <container-id> <container-id>
+```
+
 ## 6. Logs and stop
 
 Tail logs:
@@ -284,10 +311,19 @@ make down
   - `/media/music`
   - `/media/audiobooks`
   - `/media/podcasts`
+- Shared media bind mounts should be:
+  - Nextcloud: `/srv/media/* -> /media/*`
+  - Navidrome: `/srv/media/music -> /music:ro`
+  - Audiobookshelf: `/srv/media/audiobooks -> /audiobooks:ro`, `/srv/media/podcasts -> /podcasts:ro`
 - All public apps are routed by Caddy over the external Docker network `proxy`.
+- Mollysocket is airgapped by default in this setup (no Caddy route and no public DNS required).
 - OpenClaw is host-native and should not be exposed through Caddy or public DNS.
 - Home Assistant runs with `network_mode: host` for LAN discovery.
 - To expose Home Assistant through Caddy, run `./scripts/enable-ha-public.sh` (or `make ha-public-enable`).
+- If Home Assistant returns `502` through Caddy, allow host firewall traffic from the Docker proxy subnet to port `8123` (for example `sudo ufw allow proto tcp from 172.18.0.0/16 to any port 8123`).
+- Caddy runs with `admin off`; do not rely on `caddy reload` inside the container. Apply Caddyfile changes with `docker compose ... up -d --force-recreate caddy`.
+- Keep Caddy state paths writable by the running container user (`/srv/proxy/caddy-data` and `/srv/proxy/caddy-config`), and avoid blanket permission changes under `/srv`.
+- Do not run broad ownership commands like `chown -R` over all of `/srv`; fix ownership only for the affected service paths.
 - The helper script updates `/srv/homeassistant/config/configuration.yaml` with:
 ```yaml
 http:

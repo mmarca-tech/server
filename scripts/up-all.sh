@@ -5,6 +5,8 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 stacks=(nextcloud immich ha jellyfin jellyseerr calibre navidrome audiobookshelf mollysocket proxy)
+COMPOSE_WAIT_TIMEOUT="${COMPOSE_WAIT_TIMEOUT:-600}"
+compose_wait_supported=false
 
 project_name_for_stack() {
   local stack="$1"
@@ -43,6 +45,12 @@ fi
 
 ensure_shared_media_dirs
 
+if docker compose up --help 2>/dev/null | grep -q -- '--wait'; then
+  compose_wait_supported=true
+else
+  echo "Warning: this Docker Compose version does not support --wait; startup will not block on health checks."
+fi
+
 for stack in "${stacks[@]}"; do
   if [[ ! -f "$stack/.env" ]]; then
     echo "Missing $stack/.env"
@@ -53,7 +61,13 @@ for stack in "${stacks[@]}"; do
   echo "Starting stack: $stack"
   (
     cd "$stack"
-    docker compose --project-name "$(project_name_for_stack "$stack")" up -d
+    if [[ "$compose_wait_supported" == "true" ]]; then
+      docker compose \
+        --project-name "$(project_name_for_stack "$stack")" \
+        up -d --wait --wait-timeout "$COMPOSE_WAIT_TIMEOUT"
+    else
+      docker compose --project-name "$(project_name_for_stack "$stack")" up -d
+    fi
   )
 done
 

@@ -177,6 +177,14 @@ cd server
 ./scripts/init-env.sh
 ```
 
+Equivalent Make targets:
+
+```bash
+make bootstrap
+make media
+make init
+```
+
 Edit all generated `*/.env` files and set strong secrets.
 Also review and pin all `*_IMAGE` variables to versions you have tested.
 `bootstrap-host.sh` creates the `/srv/*` directory layout shown above.
@@ -267,9 +275,9 @@ Edit `proxy/.env`:
 - `calibre.example.com`
 - `navidrome.example.com`
 - `audiobookshelf.example.com`
-- `mollysocket.example.com`
 
 OpenClaw route must not exist in Caddy.
+Mollysocket is airgapped by default in this setup. Only add a `mollysocket` route if you intentionally want public access.
 
 ### 2.3 Start services
 
@@ -290,6 +298,9 @@ Confirm Caddy header hardening is active:
 ```bash
 curl -I https://nc.example.com | rg -n 'strict-transport-security|x-content-type-options|x-frame-options' -i
 ```
+
+Because this repo uses `admin off` in Caddy global options, `caddy reload` from inside the container will fail.
+Apply Caddyfile changes by recreating/restarting the `caddy` service with Docker Compose.
 
 ### 2.5 Optional: expose Home Assistant via Caddy
 
@@ -312,6 +323,17 @@ Then ensure DNS includes `ha` and test:
 ```bash
 curl -I https://ha.example.com
 ```
+
+If Home Assistant returns `502` and Caddy logs show upstream timeout to `:8123`,
+allow host firewall traffic from the Docker proxy subnet to port `8123`. Example:
+
+```bash
+PROXY_SUBNET="$(docker network inspect proxy --format '{{(index .IPAM.Config 0).Subnet}}')"
+sudo ufw allow proto tcp from "$PROXY_SUBNET" to any port 8123 comment 'caddy->homeassistant'
+```
+
+If `host.docker.internal:8123` still does not respond from Caddy, use the proxy bridge gateway IP
+as the upstream target in `proxy/Caddyfile` (for example `172.18.0.1:8123`), then recreate Caddy.
 
 If you edit Home Assistant config manually, use:
 
@@ -357,7 +379,7 @@ Create `A` records pointing to your WAN IP:
 - `calibre`
 - `navidrome`
 - `audiobookshelf`
-- `mollysocket`
+- optional `mollysocket` (only if intentionally public)
 - optional `ha`
 
 Do not create any DNS record for OpenClaw.
@@ -413,6 +435,18 @@ sudo chmod 640 /etc/openclaw/openclaw.env
 
 3. Never commit secret values to git.
 
+4. Avoid broad ownership changes over `/srv` (for example `chown -R /srv`), which can break running services.
+   Fix ownership/permissions only on the service path that is failing.
+
+5. Keep proxy state directories writable for Caddy:
+
+```bash
+sudo mkdir -p /srv/proxy/caddy-data /srv/proxy/caddy-config
+sudo chown -R root:root /srv/proxy/caddy-data /srv/proxy/caddy-config
+sudo find /srv/proxy/caddy-data /srv/proxy/caddy-config -type d -exec chmod 755 {} \;
+sudo find /srv/proxy/caddy-data /srv/proxy/caddy-config -type f -exec chmod 644 {} \;
+```
+
 ## 7. Service Post-Setup Checks
 
 ### 7.1 Nextcloud
@@ -437,6 +471,23 @@ sudo chmod 640 /etc/openclaw/openclaw.env
 2. Confirm media/library paths are mounted and readable where required.
 3. For Nextcloud External Storage (Local), use container paths only:
    `/media/music`, `/media/audiobooks`, `/media/podcasts`.
+4. Verify shared media mounts:
+
+```bash
+docker inspect navidrome_fresh-navidrome-1 --format '{{range .Mounts}}{{println .Source "->" .Destination}}{{end}}' | grep '/music'
+docker inspect audiobookshelf_fresh-audiobookshelf-1 --format '{{range .Mounts}}{{println .Source "->" .Destination}}{{end}}' | grep -E '/audiobooks|/podcasts'
+```
+5. Expected mount sources:
+   `/srv/media/music`, `/srv/media/audiobooks`, `/srv/media/podcasts`.
+
+### 7.4 Common runtime pitfalls
+
+1. Navidrome scans but finds nothing:
+   `/music` is mounted but empty or `ND_SCANSCHEDULE` is disabled.
+2. Audiobookshelf admin creation returns 500 with "root user already exists":
+   initial admin is already created; log in with that account instead of creating a new one.
+3. Nextcloud errors mention `config.php` permission denied:
+   ownership/permissions under `/srv/nextcloud/html` were changed incorrectly.
 
 ## 8. OpenClaw Telegram-Only Access Policy
 
