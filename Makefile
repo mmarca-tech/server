@@ -1,9 +1,12 @@
 SHELL := /bin/bash
 
-.PHONY: bootstrap init pull up down logs openclaw-install openclaw-onboard security-check docker-install local-llm-install clawdbot-local clawdbot-openai master-setup ha-public-enable
+.PHONY: bootstrap media init pull up down logs openclaw-install openclaw-onboard security-check docker-install local-llm-install clawdbot-local clawdbot-openai master-setup ha-public-enable
 
 bootstrap:
 	./scripts/bootstrap-host.sh
+
+media:
+	./scripts/prepare-shared-media.sh
 
 init:
 	./scripts/init-env.sh

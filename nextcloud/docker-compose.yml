@@ -49,6 +49,9 @@ services:
     volumes:
       - /srv/nextcloud/html:/var/www/html
       - /srv/nextcloud/data:/var/www/html/data
+      - /srv/media/music:/media/music
+      - /srv/media/audiobooks:/media/audiobooks
+      - /srv/media/podcasts:/media/podcasts
     env_file:
       - .env
     environment:

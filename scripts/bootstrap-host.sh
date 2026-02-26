@@ -10,6 +10,10 @@ directories=(
   "$SRV_ROOT/proxy"
   "$SRV_ROOT/proxy/caddy-data"
   "$SRV_ROOT/proxy/caddy-config"
+  "$SRV_ROOT/media"
+  "$SRV_ROOT/media/music"
+  "$SRV_ROOT/media/audiobooks"
+  "$SRV_ROOT/media/podcasts"
   "$SRV_ROOT/nextcloud"
   "$SRV_ROOT/nextcloud/html"
   "$SRV_ROOT/nextcloud/data"
@@ -27,12 +31,9 @@ directories=(
   "$SRV_ROOT/calibre/library"
   "$SRV_ROOT/navidrome"
   "$SRV_ROOT/navidrome/data"
-  "$SRV_ROOT/navidrome/music"
   "$SRV_ROOT/audiobookshelf"
   "$SRV_ROOT/audiobookshelf/config"
   "$SRV_ROOT/audiobookshelf/metadata"
-  "$SRV_ROOT/audiobookshelf/audiobooks"
-  "$SRV_ROOT/audiobookshelf/podcasts"
   "$SRV_ROOT/mollysocket"
   "$SRV_ROOT/mollysocket/data"
   "$SRV_ROOT/homeassistant"
@@ -46,6 +47,9 @@ directories=(
 echo "Creating app data directories under $SRV_ROOT"
 sudo mkdir -p "${directories[@]}"
 sudo chown -R "$USER:$USER" "${directories[@]}"
+
+echo "Preparing shared media directories and legacy path links"
+./scripts/prepare-shared-media.sh
 
 if ! docker network inspect proxy >/dev/null 2>&1; then
   echo "Creating external Docker network: proxy"

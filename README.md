@@ -83,6 +83,7 @@ Create DNS A records to your WAN IP:
 git clone <your-repo-url>
 cd server
 ./scripts/bootstrap-host.sh
+./scripts/prepare-shared-media.sh
 ./scripts/init-env.sh
 ```
 
@@ -263,6 +264,10 @@ make down
 ```text
 /srv/
  ├── proxy/
+ ├── media/
+ │   ├── music/
+ │   ├── audiobooks/
+ │   └── podcasts/
  ├── nextcloud/
  ├── immich/
  ├── jellyfin/
@@ -275,6 +280,10 @@ make down
  ├── databases/
  └── backups/
 ```
+- Nextcloud External Storage "Local" paths must use container paths (not host paths):
+  - `/media/music`
+  - `/media/audiobooks`
+  - `/media/podcasts`
 - All public apps are routed by Caddy over the external Docker network `proxy`.
 - OpenClaw is host-native and should not be exposed through Caddy or public DNS.
 - Home Assistant runs with `network_mode: host` for LAN discovery.

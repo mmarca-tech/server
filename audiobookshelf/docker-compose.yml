@@ -13,8 +13,8 @@ services:
     volumes:
       - /srv/audiobookshelf/config:/config
       - /srv/audiobookshelf/metadata:/metadata
-      - /srv/audiobookshelf/audiobooks:/audiobooks:ro
-      - /srv/audiobookshelf/podcasts:/podcasts:ro
+      - /srv/media/audiobooks:/audiobooks:ro
+      - /srv/media/podcasts:/podcasts:ro
 
 networks:
   proxy:

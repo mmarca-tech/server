@@ -17,7 +17,7 @@ services:
       ND_MUSICFOLDER: ${ND_MUSICFOLDER:-/music}
     volumes:
       - /srv/navidrome/data:/data
-      - /srv/navidrome/music:/music:ro
+      - /srv/media/music:/music:ro
 
 networks:
   proxy:
