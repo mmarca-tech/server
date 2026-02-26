@@ -11,6 +11,11 @@ project_name_for_stack() {
   echo "${stack}_fresh"
 }
 
+legacy_project_name_for_stack() {
+  local stack="$1"
+  echo "$stack"
+}
+
 for stack in "${stacks[@]}"; do
   if [[ ! -f "$stack/docker-compose.yml" ]]; then
     echo "Skipping missing stack directory: $stack"
@@ -22,11 +27,13 @@ for stack in "${stacks[@]}"; do
     continue
   fi
 
-  echo "Stopping stack: $stack"
-  (
-    cd "$stack"
-    docker compose --project-name "$(project_name_for_stack "$stack")" down
-  )
+  for project_name in "$(project_name_for_stack "$stack")" "$(legacy_project_name_for_stack "$stack")"; do
+    echo "Stopping stack: $stack (project: $project_name)"
+    (
+      cd "$stack"
+      docker compose --project-name "$project_name" down --remove-orphans
+    )
+  done
 done
 
 echo "All stacks stopped."

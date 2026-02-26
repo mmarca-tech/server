@@ -1,6 +1,8 @@
 services:
   mollysocket:
     image: ${MOLLYSOCKET_IMAGE}
+    command:
+      - server
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
