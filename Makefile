@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: bootstrap media init pull up down logs openclaw-install openclaw-onboard security-check docker-install local-llm-install clawdbot-local clawdbot-openai master-setup ha-public-enable
+.PHONY: bootstrap media init pull up down logs openclaw-install openclaw-onboard security-check docker-install local-llm-install clawdbot-local clawdbot-openai master-setup ha-public-enable nextcloud-fix nextcloud-fix-expensive
 
 bootstrap:
 	./scripts/bootstrap-host.sh
@@ -53,3 +53,9 @@ master-setup:
 
 ha-public-enable:
 	./scripts/enable-ha-public.sh
+
+nextcloud-fix:
+	./scripts/nextcloud-fix.sh
+
+nextcloud-fix-expensive:
+	./scripts/nextcloud-fix.sh --include-expensive

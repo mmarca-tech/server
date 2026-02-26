@@ -131,6 +131,13 @@ Override wait timeout (seconds) when needed:
 COMPOSE_WAIT_TIMEOUT=1200 ./scripts/up-all.sh
 ```
 
+`up-all.sh` also applies Nextcloud proxy/HTTPS defaults by running `scripts/nextcloud-fix.sh`.
+Disable that behavior if needed:
+
+```bash
+NEXTCLOUD_AUTO_FIX=false ./scripts/up-all.sh
+```
+
 ## 5. Install OpenClaw on the host (non-Docker)
 
 ```bash
@@ -197,6 +204,13 @@ Equivalent Make target:
 
 ```bash
 OPENAI_API_KEY='sk-...' make clawdbot-openai
+```
+
+Run Nextcloud warning fixes on demand:
+
+```bash
+make nextcloud-fix
+make nextcloud-fix-expensive
 ```
 
 Run hardening audit checks:

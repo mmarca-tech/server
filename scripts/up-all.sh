@@ -6,6 +6,7 @@ cd "$ROOT_DIR"
 
 stacks=(nextcloud immich ha jellyfin jellyseerr calibre navidrome audiobookshelf mollysocket proxy)
 COMPOSE_WAIT_TIMEOUT="${COMPOSE_WAIT_TIMEOUT:-600}"
+NEXTCLOUD_AUTO_FIX="${NEXTCLOUD_AUTO_FIX:-true}"
 compose_wait_supported=false
 
 project_name_for_stack() {
@@ -69,6 +70,11 @@ for stack in "${stacks[@]}"; do
       docker compose --project-name "$(project_name_for_stack "$stack")" up -d
     fi
   )
+
+  if [[ "$stack" == "nextcloud" && "$NEXTCLOUD_AUTO_FIX" == "true" ]]; then
+    echo "Applying Nextcloud proxy/HTTPS defaults"
+    PROJECT_NAME="$(project_name_for_stack "$stack")" "$ROOT_DIR/scripts/nextcloud-fix.sh"
+  fi
 done
 
 echo "All stacks started."
