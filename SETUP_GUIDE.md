@@ -57,6 +57,10 @@ Target `/srv` tree used by this repo:
 ```text
 /srv/
  ├── proxy/
+ ├── media/
+ │   ├── music/
+ │   ├── audiobooks/
+ │   └── podcasts/
  ├── nextcloud/
  ├── immich/
  ├── jellyfin/
@@ -169,12 +173,15 @@ sudo systemctl enable --now avahi-daemon
 git clone <your-repo-url>
 cd server
 ./scripts/bootstrap-host.sh
+./scripts/prepare-shared-media.sh
 ./scripts/init-env.sh
 ```
 
 Edit all generated `*/.env` files and set strong secrets.
 Also review and pin all `*_IMAGE` variables to versions you have tested.
 `bootstrap-host.sh` creates the `/srv/*` directory layout shown above.
+`prepare-shared-media.sh` ensures `/srv/media/*` exists and wires legacy paths:
+`/srv/navidrome/music`, `/srv/audiobookshelf/audiobooks`, `/srv/audiobookshelf/podcasts`.
 
 ### 1.5 Install OpenClaw on host (non-Docker)
 
@@ -428,6 +435,8 @@ sudo chmod 640 /etc/openclaw/openclaw.env
 
 1. Confirm each app is reachable via HTTPS subdomain.
 2. Confirm media/library paths are mounted and readable where required.
+3. For Nextcloud External Storage (Local), use container paths only:
+   `/media/music`, `/media/audiobooks`, `/media/podcasts`.
 
 ## 8. OpenClaw Telegram-Only Access Policy
 

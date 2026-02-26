@@ -123,6 +123,7 @@ manual_checkpoint \
 
 run_step "Install Docker engine + compose plugin" ./scripts/install-docker-host.sh
 run_step "Create host directories and proxy network" ./scripts/bootstrap-host.sh
+run_step "Prepare shared media directories for Nextcloud/Navidrome/Audiobookshelf" ./scripts/prepare-shared-media.sh
 run_step "Create missing .env files from examples" ./scripts/init-env.sh
 
 echo
@@ -156,6 +157,11 @@ manual_checkpoint \
 
 run_step "Start all Docker stacks" ./scripts/up-all.sh
 run_step "Install/refresh OpenClaw host service" ./scripts/install-openclaw-host.sh
+
+manual_checkpoint \
+  "Nextcloud media mounts" \
+  "In Nextcloud External storage, use container paths: /media/music, /media/audiobooks, /media/podcasts." \
+  "Do NOT use host paths like /srv/media/... inside the Nextcloud UI."
 
 manual_checkpoint \
   "Edit OpenClaw env file" \
