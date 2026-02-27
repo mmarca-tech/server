@@ -8,5 +8,9 @@ services:
     volumes:
       - /srv/homeassistant/config:/config
       - /etc/localtime:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
+      - /run/udev:/run/udev:ro
     env_file:
       - .env
+    environment:
+      DBUS_SYSTEM_BUS_ADDRESS: unix:path=/run/dbus/system_bus_socket

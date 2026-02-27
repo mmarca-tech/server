@@ -53,5 +53,5 @@ audiobookshelf.{$ROOT_DOMAIN} {
 # Optional Home Assistant through Caddy while Home Assistant runs in host network mode.
 ha.{$ROOT_DOMAIN} {
   import secure_headers
-  reverse_proxy 172.18.0.1:8123
+  reverse_proxy host.docker.internal:8123
 }

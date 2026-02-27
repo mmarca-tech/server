@@ -101,15 +101,47 @@ enable_ha_caddy_route() {
   tmp_file="$(mktemp)"
 
   awk '
-    BEGIN { in_ha=0 }
-    /^ha\.\{\$ROOT_DOMAIN\}[[:space:]]*\{/ { print; in_ha=1; next }
-    in_ha && /^[[:space:]]*reverse_proxy[[:space:]]+host\.docker\.internal:8123[[:space:]]*$/ { print; next }
-    in_ha && /^\}[[:space:]]*$/ { print; in_ha=0; next }
-
-    /^# ha\.\{\$ROOT_DOMAIN\}[[:space:]]*\{/ { sub(/^# /, ""); print; in_ha=1; next }
-    in_ha && /^#   reverse_proxy host\.docker\.internal:8123[[:space:]]*$/ { sub(/^# /, ""); print; next }
-    in_ha && /^# \}[[:space:]]*$/ { sub(/^# /, ""); print; in_ha=0; next }
-
+    BEGIN { in_ha=0; saw_rp=0 }
+    /^# ha\.\{\$ROOT_DOMAIN\}[[:space:]]*\{/ {
+      sub(/^#[[:space:]]*/, "", $0)
+      print
+      in_ha=1
+      saw_rp=0
+      next
+    }
+    /^ha\.\{\$ROOT_DOMAIN\}[[:space:]]*\{/ {
+      print
+      in_ha=1
+      saw_rp=0
+      next
+    }
+    in_ha && /^#[[:space:]]*reverse_proxy[[:space:]]+/ {
+      print "  reverse_proxy host.docker.internal:8123"
+      saw_rp=1
+      next
+    }
+    in_ha && /^[[:space:]]*reverse_proxy[[:space:]]+/ {
+      print "  reverse_proxy host.docker.internal:8123"
+      saw_rp=1
+      next
+    }
+    in_ha && /^#[[:space:]]*\}[[:space:]]*$/ {
+      if (!saw_rp) {
+        print "  reverse_proxy host.docker.internal:8123"
+      }
+      sub(/^#[[:space:]]*/, "", $0)
+      print
+      in_ha=0
+      next
+    }
+    in_ha && /^\}[[:space:]]*$/ {
+      if (!saw_rp) {
+        print "  reverse_proxy host.docker.internal:8123"
+      }
+      print
+      in_ha=0
+      next
+    }
     { print }
   ' "$caddyfile" > "$tmp_file"
 
