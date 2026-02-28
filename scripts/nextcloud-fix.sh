@@ -82,11 +82,20 @@ container_exec() {
   )
 }
 
+container_exec_www_data() {
+  (
+    cd "$STACK_DIR"
+    docker compose --project-name "$PROJECT_NAME" exec -T -u www-data "$@"
+  )
+}
+
 detect_occ_path() {
   local candidate
 
-  for candidate in /var/www/html/occ /usr/src/nextcloud/occ; do
-    if container_exec nextcloud test -f "$candidate" >/dev/null 2>&1; then
+  # Prefer the immutable image copy first. The bind-mounted app dir can drift in
+  # ownership/ACLs and make /var/www/html/occ unreadable to www-data.
+  for candidate in /usr/src/nextcloud/occ /var/www/html/occ; do
+    if container_exec_www_data nextcloud test -r "$candidate" >/dev/null 2>&1; then
       printf '%s\n' "$candidate"
       return 0
     fi
@@ -114,8 +123,8 @@ fi
 
 occ_path="$(detect_occ_path || true)"
 if [[ -z "$occ_path" ]]; then
-  echo "Could not find occ inside the Nextcloud container." >&2
-  echo "Checked: /var/www/html/occ and /usr/src/nextcloud/occ" >&2
+  echo "Could not find a readable occ path inside the Nextcloud container." >&2
+  echo "Checked as www-data: /usr/src/nextcloud/occ and /var/www/html/occ" >&2
   echo "Inspect the container layout with:" >&2
   echo "  docker compose --project-name \"$PROJECT_NAME\" exec -T nextcloud sh -lc 'ls -l /var/www/html /usr/src/nextcloud 2>/dev/null'" >&2
   exit 1
