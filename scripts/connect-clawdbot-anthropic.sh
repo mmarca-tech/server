@@ -127,7 +127,7 @@ if [[ "$DISABLE_OLLAMA_DROPINS" == "true" ]]; then
 fi
 
 runtime_cfg="/srv/openclaw/.openclaw/openclaw.json"
-if [[ -f "$runtime_cfg" ]]; then
+if as_root test -f "$runtime_cfg"; then
   as_root python3 - "$runtime_cfg" "$MODEL" "$TELEGRAM_DM_POLICY" <<'PY'
 import json
 import sys

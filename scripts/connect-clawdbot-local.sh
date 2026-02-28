@@ -143,7 +143,7 @@ fi
 # Ensure persisted OpenClaw runtime config keeps model/workspace sane.
 # Provider credentials/endpoints are read from /etc/openclaw/openclaw.env for this OpenClaw version.
 runtime_cfg="/srv/openclaw/.openclaw/openclaw.json"
-if [[ -f "$runtime_cfg" ]]; then
+if as_root test -f "$runtime_cfg"; then
   as_root python3 - "$runtime_cfg" "$MODEL" <<'PY'
 import json
 import sys
