@@ -206,6 +206,26 @@ Equivalent Make target:
 OPENAI_API_KEY='sk-...' make clawdbot-openai
 ```
 
+Use Anthropic Claude for OpenClaw/ClawdBot:
+
+```bash
+ANTHROPIC_API_KEY='sk-ant-...' ./scripts/connect-clawdbot-anthropic.sh
+```
+
+Default Anthropic model is `anthropic/claude-sonnet-4-5`.
+
+Optional overrides:
+
+```bash
+ANTHROPIC_API_KEY='sk-ant-...' MODEL='anthropic/claude-3-5-haiku-latest' TELEGRAM_DM_POLICY='pairing' ./scripts/connect-clawdbot-anthropic.sh
+```
+
+Equivalent Make target:
+
+```bash
+ANTHROPIC_API_KEY='sk-ant-...' make clawdbot-anthropic
+```
+
 Run Nextcloud warning fixes on demand:
 
 ```bash

@@ -21,9 +21,9 @@ else
   exit 1
 fi
 
-if [[ "${OPENCLAW_BACKEND}" != "openai" && "${OPENCLAW_BACKEND}" != "local" && "${OPENCLAW_BACKEND}" != "skip" ]]; then
+if [[ "${OPENCLAW_BACKEND}" != "openai" && "${OPENCLAW_BACKEND}" != "anthropic" && "${OPENCLAW_BACKEND}" != "local" && "${OPENCLAW_BACKEND}" != "skip" ]]; then
   echo "Invalid OPENCLAW_BACKEND=${OPENCLAW_BACKEND}"
-  echo "Valid values: openai, local, skip"
+  echo "Valid values: openai, anthropic, local, skip"
   exit 1
 fi
 
@@ -110,6 +110,23 @@ openclaw_configure_backend() {
         run_step "Configure OpenClaw for OpenAI (${OPENCLAW_MODEL})" env OPENAI_API_KEY="$key" MODEL="$OPENCLAW_MODEL" ./scripts/connect-clawdbot-openai.sh
       else
         run_step "Configure OpenClaw for OpenAI (default model)" env OPENAI_API_KEY="$key" ./scripts/connect-clawdbot-openai.sh
+      fi
+      ;;
+    anthropic)
+      local key="${ANTHROPIC_API_KEY:-}"
+      if [[ -z "$key" ]]; then
+        read -r -s -p "Enter ANTHROPIC_API_KEY (input hidden): " key
+        echo
+      fi
+      if [[ -z "$key" ]]; then
+        echo "ANTHROPIC_API_KEY is required for OPENCLAW_BACKEND=anthropic"
+        exit 1
+      fi
+
+      if [[ -n "$OPENCLAW_MODEL" ]]; then
+        run_step "Configure OpenClaw for Anthropic (${OPENCLAW_MODEL})" env ANTHROPIC_API_KEY="$key" MODEL="$OPENCLAW_MODEL" ./scripts/connect-clawdbot-anthropic.sh
+      else
+        run_step "Configure OpenClaw for Anthropic (default model)" env ANTHROPIC_API_KEY="$key" ./scripts/connect-clawdbot-anthropic.sh
       fi
       ;;
     local)

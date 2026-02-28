@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: bootstrap media init pull up down logs openclaw-install openclaw-onboard security-check docker-install local-llm-install clawdbot-local clawdbot-openai master-setup ha-public-enable nextcloud-fix nextcloud-fix-expensive
+.PHONY: bootstrap media init pull up down logs openclaw-install openclaw-onboard security-check docker-install local-llm-install clawdbot-local clawdbot-openai clawdbot-anthropic master-setup ha-public-enable nextcloud-fix nextcloud-fix-expensive
 
 bootstrap:
 	./scripts/bootstrap-host.sh
@@ -47,6 +47,9 @@ clawdbot-local:
 
 clawdbot-openai:
 	./scripts/connect-clawdbot-openai.sh
+
+clawdbot-anthropic:
+	./scripts/connect-clawdbot-anthropic.sh
 
 master-setup:
 	./scripts/master-setup.sh
