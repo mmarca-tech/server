@@ -78,7 +78,7 @@ maintenance_window_start="${NEXTCLOUD_MAINTENANCE_WINDOW_START:-2}"
 occ() {
   (
     cd "$STACK_DIR"
-    docker compose --project-name "$PROJECT_NAME" exec -T -u www-data nextcloud php occ "$@"
+    docker compose --project-name "$PROJECT_NAME" exec -T -u www-data nextcloud php /var/www/html/occ "$@"
   )
 }
 
