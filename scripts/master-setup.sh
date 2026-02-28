@@ -12,6 +12,15 @@ OPENCLAW_BACKEND="${OPENCLAW_BACKEND:-openai}"
 OPENCLAW_MODEL="${OPENCLAW_MODEL:-}"
 EXPOSE_HOMEASSISTANT="${EXPOSE_HOMEASSISTANT:-false}"
 
+if [[ "${EUID}" -eq 0 ]]; then
+  SUDO=""
+elif command -v sudo >/dev/null 2>&1; then
+  SUDO="sudo"
+else
+  echo "sudo is required when running as non-root."
+  exit 1
+fi
+
 if [[ "${OPENCLAW_BACKEND}" != "openai" && "${OPENCLAW_BACKEND}" != "local" && "${OPENCLAW_BACKEND}" != "skip" ]]; then
   echo "Invalid OPENCLAW_BACKEND=${OPENCLAW_BACKEND}"
   echo "Valid values: openai, local, skip"
@@ -55,6 +64,14 @@ run_step() {
   echo
   echo "[RUN] ${title}"
   "$@"
+}
+
+as_root() {
+  if [[ -n "$SUDO" ]]; then
+    sudo "$@"
+  else
+    "$@"
+  fi
 }
 
 set_kv() {
@@ -110,6 +127,12 @@ openclaw_configure_backend() {
   esac
 }
 
+install_homeassistant_host_prereqs() {
+  as_root apt update
+  as_root apt install -y dbus bluez
+  as_root systemctl enable --now dbus bluetooth
+}
+
 echo "Master setup starting in: $ROOT_DIR"
 echo "Using LAN_IP=${LAN_IP}, LAN_CIDR=${LAN_CIDR}, ROOT_DOMAIN=${ROOT_DOMAIN}, ACME_EMAIL=${ACME_EMAIL}"
 echo "OpenClaw backend: ${OPENCLAW_BACKEND}"
@@ -122,6 +145,7 @@ manual_checkpoint \
   "Confirm your DNS provider can create records for ${ROOT_DOMAIN}."
 
 run_step "Install Docker engine + compose plugin" ./scripts/install-docker-host.sh
+run_step "Install Home Assistant host prerequisites (DBus/Bluetooth)" install_homeassistant_host_prereqs
 run_step "Create host directories and proxy network" ./scripts/bootstrap-host.sh
 run_step "Prepare shared media directories for Nextcloud/Navidrome/Audiobookshelf" ./scripts/prepare-shared-media.sh
 run_step "Create missing .env files from examples" ./scripts/init-env.sh
