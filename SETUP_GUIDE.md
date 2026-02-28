@@ -69,6 +69,7 @@ Target `/srv` tree used by this repo:
  ├── navidrome/
  ├── audiobookshelf/
  ├── mollysocket/
+ ├── adguard/
  ├── homeassistant/
  ├── databases/
  └── backups/
@@ -285,6 +286,14 @@ Mollysocket is airgapped by default in this setup. Only add a `mollysocket` rout
 ./scripts/up-all.sh
 ```
 
+If you plan to use AdGuard Home, complete the initial wizard from your LAN after the stack starts:
+
+- Open `http://192.168.1.20:3000`
+- Keep the admin UI on `3000` or `3001`, LAN-only
+- Bind DNS on the server LAN IP, port `53`
+- Point router DHCP DNS (or client DNS) to the server LAN IP
+- Do not put AdGuard behind Caddy or public DNS
+
 ### 2.4 Verify Caddy and TLS
 
 ```bash
@@ -359,13 +368,17 @@ sudo ufw default allow outgoing
 sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
 sudo ufw allow from 192.168.1.0/24 to any port 22 proto tcp
+sudo ufw allow from 192.168.1.0/24 to any port 53 proto tcp
+sudo ufw allow from 192.168.1.0/24 to any port 53 proto udp
+sudo ufw allow from 192.168.1.0/24 to any port 3000 proto tcp
 sudo ufw deny 18789/tcp
 sudo ufw deny 18790/tcp
 sudo ufw enable
 sudo ufw status verbose
 ```
 
-If your LAN subnet differs from `192.168.1.0/24`, adjust that SSH rule accordingly.
+If your LAN subnet differs from `192.168.1.0/24`, adjust the SSH and AdGuard LAN-only rules accordingly.
+If you move the AdGuard admin UI to port `3001`, allow `3001/tcp` instead of `3000/tcp`.
 
 ## 4. DNS Setup for example.com
 
@@ -383,6 +396,7 @@ Create `A` records pointing to your WAN IP:
 - optional `ha`
 
 Do not create any DNS record for OpenClaw.
+Do not create any public DNS record for AdGuard Home; keep it LAN-only and use your router/client DNS settings instead.
 
 After creating DNS records, verify propagation:
 

@@ -1,0 +1,14 @@
+services:
+  adguard:
+    image: ${ADGUARD_IMAGE}
+    restart: unless-stopped
+    network_mode: host
+    security_opt:
+      - no-new-privileges:true
+    env_file:
+      - .env
+    environment:
+      TZ: ${TZ:-UTC}
+    volumes:
+      - /srv/adguard/work:/opt/adguardhome/work
+      - /srv/adguard/conf:/opt/adguardhome/conf

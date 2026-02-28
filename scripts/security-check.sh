@@ -98,7 +98,7 @@ else
   pass "Env image variables are pinned away from latest/release/stable"
 fi
 
-non_proxy_port_pubs="$(grep -nHE '^[[:space:]]+ports:[[:space:]]*$' nextcloud/docker-compose.yml immich/docker-compose.yml ha/docker-compose.yml jellyfin/docker-compose.yml jellyseerr/docker-compose.yml calibre/docker-compose.yml navidrome/docker-compose.yml audiobookshelf/docker-compose.yml mollysocket/docker-compose.yml || true)"
+non_proxy_port_pubs="$(grep -nHE '^[[:space:]]+ports:[[:space:]]*$' nextcloud/docker-compose.yml immich/docker-compose.yml ha/docker-compose.yml jellyfin/docker-compose.yml jellyseerr/docker-compose.yml calibre/docker-compose.yml navidrome/docker-compose.yml audiobookshelf/docker-compose.yml mollysocket/docker-compose.yml adguard/docker-compose.yml || true)"
 if [[ -n "$non_proxy_port_pubs" ]]; then
   fail "Non-proxy stacks publish host ports:\n$non_proxy_port_pubs"
 else
@@ -130,6 +130,7 @@ required_srv_dirs=(
   /srv/navidrome
   /srv/audiobookshelf
   /srv/mollysocket
+  /srv/adguard
   /srv/homeassistant
   /srv/databases
   /srv/backups
@@ -195,6 +196,32 @@ if UFW_BIN="$(resolve_ufw 2>/dev/null)"; then
         pass "UFW denies 18790/tcp"
       else
         fail "UFW deny rule for 18790/tcp not found"
+      fi
+
+      if [[ -f adguard/.env ]]; then
+        adguard_dns_rules="$(echo "$ufw_status" | grep -E '53/(tcp|udp)[[:space:]]+ALLOW' || true)"
+        if [[ -z "$adguard_dns_rules" ]]; then
+          warn "AdGuard stack is present but no UFW allow rules were found for DNS (53/tcp, 53/udp)"
+        elif echo "$adguard_dns_rules" | grep -Eq 'Anywhere|0\.0\.0\.0/0|::/0'; then
+          fail "AdGuard DNS appears broadly exposed in UFW rules:\n$adguard_dns_rules"
+        elif echo "$adguard_dns_rules" | grep -Fq "$LAN_CIDR"; then
+          pass "AdGuard DNS is restricted to $LAN_CIDR"
+        else
+          warn "AdGuard DNS rules exist but do not match expected LAN_CIDR=$LAN_CIDR:\n$adguard_dns_rules"
+        fi
+
+        adguard_ui_rules="$(echo "$ufw_status" | grep -E '300(0|1)/tcp[[:space:]]+ALLOW' || true)"
+        if [[ -n "$adguard_ui_rules" ]]; then
+          if echo "$adguard_ui_rules" | grep -Eq 'Anywhere|0\.0\.0\.0/0|::/0'; then
+            fail "AdGuard admin UI appears broadly exposed in UFW rules:\n$adguard_ui_rules"
+          elif echo "$adguard_ui_rules" | grep -Fq "$LAN_CIDR"; then
+            pass "AdGuard admin UI is restricted to $LAN_CIDR"
+          else
+            warn "AdGuard admin UI rules exist but do not match expected LAN_CIDR=$LAN_CIDR:\n$adguard_ui_rules"
+          fi
+        else
+          warn "AdGuard admin UI rules (3000/tcp or 3001/tcp) were not found; ensure setup UI is LAN-only if you use it"
+        fi
       fi
     else
       fail "UFW is installed but not active"

@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-stacks=(nextcloud immich ha jellyfin jellyseerr calibre navidrome audiobookshelf mollysocket proxy)
+stacks=(nextcloud immich ha jellyfin jellyseerr calibre navidrome audiobookshelf mollysocket adguard proxy)
 COMPOSE_WAIT_TIMEOUT="${COMPOSE_WAIT_TIMEOUT:-600}"
 NEXTCLOUD_AUTO_FIX="${NEXTCLOUD_AUTO_FIX:-true}"
 compose_wait_supported=false

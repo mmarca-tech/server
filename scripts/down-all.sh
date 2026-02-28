@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-stacks=(proxy mollysocket audiobookshelf navidrome calibre jellyseerr jellyfin ha immich nextcloud)
+stacks=(proxy adguard mollysocket audiobookshelf navidrome calibre jellyseerr jellyfin ha immich nextcloud)
 
 project_name_for_stack() {
   local stack="$1"

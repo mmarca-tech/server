@@ -188,16 +188,24 @@ manual_checkpoint \
 manual_checkpoint \
   "Host firewall configuration required" \
   "Ensure host firewall allows 80/tcp and 443/tcp." \
+  "If using AdGuard, allow 53/tcp and 53/udp only from LAN CIDR ${LAN_CIDR}, plus 3000/tcp or 3001/tcp only from LAN during initial setup." \
   "Restrict SSH (22/tcp) to LAN CIDR ${LAN_CIDR}." \
   "Ensure 18789/tcp and 18790/tcp are denied from external networks."
 
 manual_checkpoint \
   "DNS records required" \
   "Create A records to your WAN IP for: @, nc, immich, jellyfin, jellyseerr, calibre, navidrome, audiobookshelf, mollysocket (and optional ha)." \
+  "Do NOT create any public DNS record for AdGuard; keep it LAN-only and point router/client DNS to ${LAN_IP} instead." \
   "Do NOT create any DNS record for OpenClaw."
 
 run_step "Start all Docker stacks" ./scripts/up-all.sh
 run_step "Install/refresh OpenClaw host service" ./scripts/install-openclaw-host.sh
+
+manual_checkpoint \
+  "AdGuard Home first-run (LAN only)" \
+  "If you plan to use AdGuard, complete the setup wizard at http://${LAN_IP}:3000 from your LAN." \
+  "Bind DNS to the server LAN IP on port 53 and keep the admin UI on 3000 or 3001, LAN-only." \
+  "Do NOT put AdGuard behind Caddy or public DNS."
 
 manual_checkpoint \
   "Nextcloud media mounts" \

@@ -14,6 +14,7 @@ This repository contains Docker Compose stacks for:
 - Navidrome
 - Audiobookshelf
 - Mollysocket
+- AdGuard Home (LAN-only DNS filtering)
 
 And host-native (non-Docker):
 
@@ -76,6 +77,8 @@ Create DNS A records to your WAN IP:
 - `audiobookshelf`
 - optional `ha`
 - optional `mollysocket` (only if you intentionally expose it)
+
+Do not create any public DNS record for AdGuard Home. Keep it LAN-only and point router/client DNS to your server LAN IP.
 
 ## 3. Clone and initialize
 
@@ -233,6 +236,15 @@ make nextcloud-fix
 make nextcloud-fix-expensive
 ```
 
+AdGuard Home first-run (LAN only):
+
+- Browse to `http://<server-lan-ip>:3000`
+- Keep the admin UI on `3000` or `3001`, LAN-only
+- Bind DNS on the server LAN IP, port `53`
+- Point router DHCP DNS (or individual clients) to your server LAN IP
+- Do not expose AdGuard through Caddy or public DNS
+- If UFW is enabled, allow `53/tcp`, `53/udp`, and `3000/tcp` or `3001/tcp` only from your LAN subnet
+
 Run hardening audit checks:
 
 ```bash
@@ -314,6 +326,7 @@ make down
 - `navidrome/` Navidrome music server
 - `audiobookshelf/` Audiobookshelf audiobook server
 - `mollysocket/` Mollysocket
+- `adguard/` AdGuard Home (LAN-only DNS filtering)
 - `openclaw/` OpenClaw host config (`/etc/openclaw/openclaw.env`) + systemd unit template
 - `scripts/` operational helpers
 - `Makefile` shorthand wrappers around scripts
@@ -337,6 +350,7 @@ make down
  ├── navidrome/
  ├── audiobookshelf/
  ├── mollysocket/
+ ├── adguard/
  ├── homeassistant/
  ├── databases/
  └── backups/
@@ -351,6 +365,7 @@ make down
   - Audiobookshelf: `/srv/media/audiobooks -> /audiobooks:ro`, `/srv/media/podcasts -> /podcasts:ro`
 - All public apps are routed by Caddy over the external Docker network `proxy`.
 - Mollysocket is airgapped by default in this setup (no Caddy route and no public DNS required).
+- AdGuard Home is LAN-only in this setup (`network_mode: host`); do not route it through Caddy or create public DNS for it.
 - OpenClaw is host-native and should not be exposed through Caddy or public DNS.
 - Home Assistant runs with `network_mode: host` for LAN discovery.
 - To expose Home Assistant through Caddy, run `./scripts/enable-ha-public.sh` (or `make ha-public-enable`).
