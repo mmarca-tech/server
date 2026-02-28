@@ -75,10 +75,30 @@ trusted_proxies_raw="${NEXTCLOUD_TRUSTED_PROXIES:-172.16.0.0/12}"
 forward_for_header="${NEXTCLOUD_FORWARD_FOR_HEADER:-HTTP_X_FORWARDED_FOR}"
 maintenance_window_start="${NEXTCLOUD_MAINTENANCE_WINDOW_START:-2}"
 
+container_exec() {
+  (
+    cd "$STACK_DIR"
+    docker compose --project-name "$PROJECT_NAME" exec -T "$@"
+  )
+}
+
+detect_occ_path() {
+  local candidate
+
+  for candidate in /var/www/html/occ /usr/src/nextcloud/occ; do
+    if container_exec nextcloud test -f "$candidate" >/dev/null 2>&1; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
 occ() {
   (
     cd "$STACK_DIR"
-    docker compose --project-name "$PROJECT_NAME" exec -T -u www-data nextcloud php /var/www/html/occ "$@"
+    docker compose --project-name "$PROJECT_NAME" exec -T -u www-data nextcloud php "$occ_path" "$@"
   )
 }
 
@@ -89,6 +109,15 @@ container_id="$(
 if [[ -z "$container_id" ]]; then
   echo "Nextcloud container is not running for project: $PROJECT_NAME" >&2
   echo "Start it first, then rerun this script." >&2
+  exit 1
+fi
+
+occ_path="$(detect_occ_path || true)"
+if [[ -z "$occ_path" ]]; then
+  echo "Could not find occ inside the Nextcloud container." >&2
+  echo "Checked: /var/www/html/occ and /usr/src/nextcloud/occ" >&2
+  echo "Inspect the container layout with:" >&2
+  echo "  docker compose --project-name \"$PROJECT_NAME\" exec -T nextcloud sh -lc 'ls -l /var/www/html /usr/src/nextcloud 2>/dev/null'" >&2
   exit 1
 fi
 
