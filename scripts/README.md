@@ -161,6 +161,42 @@ Generates timestamped reports in:
 
 ---
 
+## 🔍 Torrent Search & Download
+
+### `torrent-search.sh`
+**Non-interactive torrent search for OpenClaw/Telegram integration**
+
+```bash
+# Search torrents (returns JSON)
+./scripts/torrent-search.sh search "movie name"
+
+# Download via Transmission
+./scripts/torrent-search.sh download "magnet:?xt=urn:btih:..." /srv/media/downloads/movies
+
+# List active Transmission torrents
+./scripts/torrent-search.sh status
+
+# Resolve magnet from 1337x page (they don't expose magnets on search)
+./scripts/torrent-search.sh resolve "https://www.1337x.to/torrent/..."
+```
+
+**Sources:** TPB, 1337x, Nyaa  
+**Output:** JSON array with id, source, name, size, seeds, magnet link  
+**Transmission:** Connects to `127.0.0.1:9091` (local Docker container)
+
+**OpenClaw Integration:**
+- Ask the agent to search for a torrent via Telegram
+- Agent runs the script, presents numbered results with inline buttons
+- Select a result → agent sends magnet to Transmission
+- Supports download categories: movies, tv, general
+
+**Environment Variables:**
+- `TR_HOST` — Transmission host (default: `127.0.0.1`)
+- `TR_PORT` — Transmission port (default: `9091`)
+- `TR_USER` / `TR_PASS` — Auth credentials (if required)
+
+---
+
 ## 🛠️ Utility Scripts
 
 Helper scripts for common tasks.

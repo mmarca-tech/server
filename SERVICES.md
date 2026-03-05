@@ -83,6 +83,49 @@ All services running on the home server. Each has its own configuration director
 
 ---
 
+### Transmission (`/srv/server/transmission`)
+**Status:** ✅ Running  
+**URL:** https://transmission.example.com  
+**Port:** 9091 (Web UI), 6969 (peer), 51413 (peer)  
+**Docker Compose:** `transmission/docker-compose.yml`
+
+- Torrent download client
+- Web-based UI
+- Remote control via `transmission-remote`
+- Integrated with OpenClaw for Telegram-based search & download
+
+**Download Directories:**
+- Movies: `/srv/media/downloads/movies`
+- TV: `/srv/media/downloads/tv`
+- General: `/srv/media/downloads`
+
+**Torrent Search Script:** `scripts/torrent-search.sh`
+- Search torrents from Telegram via OpenClaw
+- Sources: TPB, 1337x, Nyaa
+- Auto-sends magnet links to Transmission
+- Usage: Ask the OpenClaw agent to "search for [query] torrent"
+
+**Commands:**
+```bash
+# List active torrents
+transmission-remote 127.0.0.1:9091 --list
+
+# Add magnet via CLI
+transmission-remote 127.0.0.1:9091 --add "magnet:?..."
+
+# Search via script
+./scripts/torrent-search.sh search "query"
+./scripts/torrent-search.sh download "magnet:?..." /srv/media/downloads/movies
+./scripts/torrent-search.sh status
+```
+
+**Common Issues:**
+- Port blocked → Check firewall: `ss -ltn | grep 9091`
+- Slow downloads → Check peer port (6969/51413) is open on router
+- Can't add torrent → Verify transmission-remote: `which transmission-remote`
+
+---
+
 ## 🏠 Smart Home
 
 ### Home Assistant (`/srv/server/ha`)

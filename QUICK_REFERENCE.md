@@ -89,6 +89,24 @@ cd /srv/server
 git log --oneline -10
 ```
 
+### Torrents (via Telegram or CLI)
+
+```bash
+# Search for torrents (JSON output)
+/srv/server/scripts/torrent-search.sh search "movie name"
+
+# Download a magnet to Transmission
+/srv/server/scripts/torrent-search.sh download "magnet:?..." /srv/media/downloads/movies
+
+# List active downloads
+/srv/server/scripts/torrent-search.sh status
+transmission-remote 127.0.0.1:9091 --list
+
+# Or just ask the OpenClaw agent via Telegram:
+#   "search for ubuntu iso torrent"
+#   "show my active downloads"
+```
+
 ---
 
 ## 🔧 Troubleshooting Quick Fixes
