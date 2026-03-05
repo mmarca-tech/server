@@ -55,3 +55,4 @@ ha.{$ROOT_DOMAIN} {
   import secure_headers
   reverse_proxy host.docker.internal:8123
 }
+
