@@ -54,6 +54,30 @@ if ! id -nG openclaw | tr ' ' '\n' | grep -qx docker; then
   sudo usermod -aG docker openclaw
 fi
 
+echo "Granting openclaw sudo access for package upgrades"
+sudoers_file="/etc/sudoers.d/openclaw"
+desired_sudoers="openclaw ALL=(ALL) NOPASSWD: /usr/bin/apt update, /usr/bin/apt upgrade -y, /usr/bin/apt full-upgrade -y, /usr/bin/crontab"
+current_sudoers="$(sudo cat "$sudoers_file" 2>/dev/null || true)"
+if [[ "$current_sudoers" != "$desired_sudoers" ]]; then
+  echo "$desired_sudoers" | sudo tee "$sudoers_file" >/dev/null
+  sudo chmod 440 "$sudoers_file"
+  sudo visudo -c -f "$sudoers_file"
+fi
+
+echo "Setting up openclaw log directory"
+sudo mkdir -p /var/log/openclaw
+sudo chown openclaw:openclaw /var/log/openclaw
+
+echo "Registering daily package update cron job"
+sudo -u openclaw openclaw cron add \
+  --name "daily-package-update" \
+  --schedule "0 2 * * *" \
+  --command "sudo apt update && sudo apt upgrade -y" \
+  --log /var/log/openclaw/package-update.log \
+  --notify-on-success \
+  --notify-on-failure \
+  2>/dev/null || echo "Cron job 'daily-package-update' already registered, skipping."
+
 if [[ -d /var/lib/openclaw ]] && [[ ! -L /var/lib/openclaw ]]; then
   echo "Migrating existing OpenClaw data from /var/lib/openclaw to /srv/openclaw"
   sudo mkdir -p /srv/openclaw
