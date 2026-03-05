@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  transmission:
+    image: haugene/transmission-openvpn:latest
+    container_name: transmission_fresh-transmission-1
+    restart: unless-stopped
+    
+    ports:
+      - "6969:6969"
+      - "6969:6969/udp"
+      - "9091:9091"
+    
+    volumes:
+      # Downloads shared with media services
+      - ./downloads:/downloads
+      - ./downloads/movies:/movies
+      - ./downloads/tv:/tv
+      - ./downloads/music:/music
+      - ./downloads/audiobooks:/audiobooks
+      
+      # Transmission config
+      - ./config:/config
+    
+    environment:
+      - TZ=Europe/Tallinn
+      - TRANSMISSION_WEB_UI=transmission-web-control
+      - TRANSMISSION_DOWNLOAD_DIR=/downloads
+      - TRANSMISSION_INCOMPLETE_DIR=/downloads/.incomplete
+      
+      # Optional: VPN settings (leave blank if not using VPN)
+      # - OPENVPN_PROVIDER=
+      # - OPENVPN_CONFIG=
+      # - OPENVPN_USERNAME=
+      # - OPENVPN_PASSWORD=
+      
+      # Disable VPN if not configured
+      - DISABLE_VPN=true
+    
+    networks:
+      - home-network
+    
+    cap_add:
+      - NET_ADMIN
+    
+    sysctls:
+      - net.ipv4.ip_forward=1
+
+networks:
+  home-network:
+    name: home-network
+    external: true

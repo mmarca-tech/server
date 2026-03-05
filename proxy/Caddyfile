@@ -56,3 +56,8 @@ ha.{$ROOT_DOMAIN} {
   reverse_proxy host.docker.internal:8123
 }
 
+transmission.{$ROOT_DOMAIN} {
+  import secure_headers
+  reverse_proxy transmission:9091
+}
+
