@@ -10,13 +10,13 @@ Docker-based torrent client with downloads accessible to Jellyfin, Jellyseerr, N
 cd /srv/server/transmission
 
 # Start
-docker-compose up -d
+docker compose up -d
 
 # Check status
-docker-compose ps
+docker compose ps
 
 # View logs
-docker-compose logs -f
+docker compose logs -f
 ```
 
 ---
@@ -55,8 +55,8 @@ DISABLE_VPN=false
 
 Then restart:
 ```bash
-docker-compose down
-docker-compose up -d
+docker compose down
+docker compose up -d
 ```
 
 ---
@@ -66,12 +66,13 @@ docker-compose up -d
 Transmission saves files to `/downloads` inside the container, which maps to:
 
 ```
-/srv/server/transmission/downloads/
+/srv/media/downloads/
 ├── .incomplete/        # Incomplete downloads
 ├── movies/            # Movies (mount to Jellyfin)
 ├── tv/                # TV Shows (mount to Jellyseerr)
 ├── music/             # Music (mount to Navidrome)
 ├── audiobooks/        # Audiobooks (mount to Audiobookshelf)
+├── podcasts/          # Podcasts
 └── [other files]
 ```
 
@@ -94,13 +95,14 @@ Edit `docker-compose.yml`:
 
 ```yaml
 volumes:
-  - ./downloads:/downloads  # Change './downloads' to new path
+  - /srv/media/downloads:/downloads  # Current: /srv/media/downloads
+  # Change to your desired path
 ```
 
 Restart:
 ```bash
-docker-compose down
-docker-compose up -d
+docker compose down
+docker compose up -d
 ```
 
 ### Enable VPN

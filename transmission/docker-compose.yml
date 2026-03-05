@@ -13,11 +13,12 @@ services:
     
     volumes:
       # Downloads shared with media services
-      - ./downloads:/downloads
-      - ./downloads/movies:/movies
-      - ./downloads/tv:/tv
-      - ./downloads/music:/music
-      - ./downloads/audiobooks:/audiobooks
+      - /srv/media/downloads:/downloads
+      - /srv/media/downloads/movies:/movies
+      - /srv/media/downloads/tv:/tv
+      - /srv/media/downloads/music:/music
+      - /srv/media/downloads/audiobooks:/audiobooks
+      - /srv/media/downloads/podcasts:/podcasts
       
       # Transmission config
       - ./config:/config
