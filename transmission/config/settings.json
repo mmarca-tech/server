@@ -17,7 +17,7 @@
     "cache-size-mb": 4,
     "default-trackers": "",
     "dht-enabled": true,
-    "download-dir": "/downloads/complete",
+    "download-dir": "/srv/media/downloads/tv",
     "download-queue-enabled": true,
     "download-queue-size": 5,
     "encryption": 1,

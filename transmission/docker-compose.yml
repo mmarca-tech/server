@@ -1,26 +1,56 @@
 version: '3.8'
 
 services:
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    container_name: gluetun
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    
+    # Ports go on gluetun since Transmission uses its network stack
+    ports:
+      - "9091:9091"       # Transmission Web UI
+      - "6969:6969"       # Peer port TCP
+      - "6969:6969/udp"   # Peer port UDP
+    
+    environment:
+      - VPN_SERVICE_PROVIDER=protonvpn
+      - VPN_TYPE=wireguard
+      - WIREGUARD_PRIVATE_KEY=IG8jvE9D4hj06pI7qvKFSNc/owkxdWBTdh8udU1tw0A=
+      - WIREGUARD_ADDRESSES=10.2.0.2/32
+      - SERVER_COUNTRIES=Estonia
+      # Enable these after regenerating WireGuard key with NAT-PMP ON in ProtonVPN dashboard:
+      # - PORT_FORWARD_ONLY=on
+      # - VPN_PORT_FORWARDING=on
+      - TZ=Europe/Tallinn
+    
+    volumes:
+      - ./gluetun:/gluetun
+    
+    networks:
+      - home-network
+
   transmission:
     image: linuxserver/transmission:latest
     container_name: transmission_fresh-transmission-1
     restart: unless-stopped
     
-    ports:
-      - "6969:6969"
-      - "6969:6969/udp"
-      - "9091:9091"
+    # Route ALL traffic through the VPN container
+    network_mode: "service:gluetun"
+    depends_on:
+      gluetun:
+        condition: service_healthy
     
     volumes:
-      # Downloads shared with media services
       - /srv/media/downloads:/downloads
       - /srv/media/downloads/movies:/movies
       - /srv/media/downloads/tv:/tv
       - /srv/media/downloads/music:/music
       - /srv/media/downloads/audiobooks:/audiobooks
       - /srv/media/downloads/podcasts:/podcasts
-      
-      # Transmission config
       - ./config:/config
     
     environment:
@@ -29,9 +59,6 @@ services:
       - TZ=Europe/Tallinn
       - TRANSMISSION_DOWNLOAD_DIR=/downloads
       - TRANSMISSION_INCOMPLETE_DIR=/downloads/.incomplete
-    
-    networks:
-      - home-network
 
 networks:
   home-network:
