@@ -19,7 +19,7 @@
 All documentation is version-controlled with git. After updating docs, commit:
 
 ```bash
-/srv/server/git-auto-commit.sh "Update documentation: describe your change"
+./scripts/git-auto-commit.sh "Update documentation: describe your change"
 ```
 
 Git history is preserved at `/srv/server/.git/`.

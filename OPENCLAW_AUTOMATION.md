@@ -57,7 +57,7 @@ Every change is version-controlled:
 cd /srv/server
 
 # After updating docs:
-/srv/server/git-auto-commit.sh "Your change description"
+./scripts/git-auto-commit.sh "Your change description"
 
 # View history:
 git log --oneline -20

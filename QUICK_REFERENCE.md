@@ -79,7 +79,7 @@ curl -I https://example.com    # Via Caddy
 ```bash
 # Git commit & push
 cd /srv/server
-/srv/server/git-auto-commit.sh "Your message"
+./scripts/git-auto-commit.sh "Your message"
 
 # Backup config
 tar -czf /tmp/config-backup.tar.gz /srv/server/*/config/
@@ -168,7 +168,7 @@ After making changes, always commit:
 
 ```bash
 cd /srv/server
-/srv/server/git-auto-commit.sh "Description of change"
+./scripts/git-auto-commit.sh "Description of change"
 ```
 
 ---

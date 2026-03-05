@@ -257,7 +257,7 @@ for service in jellyfin immich-server navidrome nextcloud caddy adguard homeassi
 
 Then commit:
 ```bash
-/srv/server/git-auto-commit.sh "Add YOURSERVICE to dashboard"
+./scripts/git-auto-commit.sh "Add YOURSERVICE to dashboard"
 ```
 
 ### Changing Refresh Rate

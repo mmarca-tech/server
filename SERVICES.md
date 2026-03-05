@@ -192,7 +192,7 @@ All services running on the home server. Each has its own configuration director
 2. Add `docker-compose.yml`
 3. Add to Caddyfile if web-accessible
 4. Document in this file
-5. Commit: `/srv/server/git-auto-commit.sh "Add SERVICE_NAME"`
+5. Commit: `./scripts/git-auto-commit.sh "Add SERVICE_NAME"`
 
 **Template:**
 ```yaml
