@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MODEL="${MODEL:-ollama/gpt-4o-mini}"
+MODEL="${MODEL:-ollama/qwen2.5:3b}"
 OLLAMA_BASE_URL="${OLLAMA_BASE_URL:-${BASE_URL:-http://127.0.0.1:11434}}"
 ENV_FILE="${ENV_FILE:-/etc/openclaw/openclaw.env}"
 OPENCLAW_UNIT="${OPENCLAW_UNIT:-openclaw-gateway}"
