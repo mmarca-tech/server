@@ -6,7 +6,6 @@ services:
     security_opt:
       - no-new-privileges:true
     networks:
-      - proxy
       - home-network
     ports:
       - "7878:7878"
@@ -19,7 +18,5 @@ services:
       - TZ=Europe/Tallinn
 
 networks:
-  proxy:
-    external: true
   home-network:
     external: true
