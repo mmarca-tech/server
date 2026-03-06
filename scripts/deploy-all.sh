@@ -43,7 +43,9 @@ bash /srv/server/scripts/install-docker.sh
 
 echo ""
 echo -e "${YELLOW}📁 Step 3: Creating Directory Structure${NC}"
-mkdir -p /srv/media/{downloads,movies,tv,music,audiobooks,podcasts}
+mkdir -p /srv/media/{downloads,downloads/movies,downloads/tv,movies,series,music,audiobooks,podcasts}
+mkdir -p /srv/{sonarr,radarr,prowlarr}/config
+chown -R "$USERNAME:$USERNAME" /srv/{sonarr,radarr,prowlarr}
 mkdir -p /srv/server
 
 echo "✅ Directory structure created"
@@ -114,6 +116,10 @@ echo "4. Access your services:"
 echo "   - Nextcloud: https://nc.$DOMAIN"
 echo "   - Jellyfin: https://jellyfin.$DOMAIN"
 echo "   - Transmission: https://transmission.$DOMAIN"
+echo "   - Sonarr (LAN): http://SERVER_IP:8989"
+echo "   - Radarr (LAN): http://SERVER_IP:7878"
+echo "   - Prowlarr (LAN): http://SERVER_IP:9696"
+echo "   - Jellyseerr: https://jellyseerr.$DOMAIN / http://SERVER_IP:5055"
 echo ""
 echo "5. Review documentation:"
 echo "   - /srv/server/DEPLOYMENT.md"

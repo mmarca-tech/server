@@ -351,6 +351,7 @@ make down
 - `sonarr/` Sonarr TV show automation
 - `radarr/` Radarr movie automation
 - `prowlarr/` Prowlarr indexer manager
+- `flaresolverr/` FlareSolverr Cloudflare bypass for Prowlarr
 - `mollysocket/` Mollysocket
 - `adguard/` AdGuard Home (LAN-only DNS filtering)
 - `openclaw/` OpenClaw host config (`/etc/openclaw/openclaw.env`) + systemd unit template

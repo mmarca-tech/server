@@ -217,6 +217,7 @@ After deployment, you'll have:
 │   ├── sonarr/              # TV show automation
 │   ├── radarr/              # Movie automation
 │   ├── prowlarr/            # Indexer manager
+│   ├── flaresolverr/       # Cloudflare bypass for Prowlarr
 │   ├── mollysocket/          # Signal relay
 │   ├── scripts/              # Automation & helper scripts
 │   └── DEPLOYMENT.md         # This file

@@ -60,6 +60,7 @@ Home server running on a Debian 13 laptop with Docker Compose, Caddy reverse pro
 | **Sonarr** | sonarr | 8989 | ✅ | TV show automation (download + organize) |
 | **Radarr** | radarr | 7878 | ✅ | Movie automation (download + organize) |
 | **Prowlarr** | prowlarr | 9696 | ✅ | Indexer manager for Sonarr/Radarr |
+| **FlareSolverr** | flaresolverr | 8191 | ✅ | Cloudflare bypass proxy for Prowlarr |
 
 ### Smart Home & Utilities
 

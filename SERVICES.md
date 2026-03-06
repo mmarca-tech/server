@@ -120,10 +120,29 @@ All services running on the home server. Each has its own configuration director
 
 ---
 
+### Jellyseerr (`/srv/server/jellyseerr`)
+**Status:** ✅ Running  
+**URL:** https://jellyseerr.example.com  
+**Port:** 5055 (also accessible on LAN)  
+**Docker Compose:** `jellyseerr/docker-compose.yml`
+
+- Media request & discovery UI (browse movies/shows, request downloads)
+- Sends movie requests to **Radarr**, TV requests to **Sonarr**
+- Integrates with Jellyfin for user auth and library status
+- Shows request status and availability
+
+**Pipeline:** Jellyseerr → Sonarr/Radarr → Prowlarr → Transmission → auto-organize → Jellyfin
+
+**Common Issues:**
+- Can't find Sonarr/Radarr → Check Settings → Sonarr/Radarr, verify API key and URL (`http://sonarr:8989`, `http://radarr:7878`)
+- Requests stuck → Check Sonarr/Radarr activity queue for errors
+- Users not syncing → Re-import from Jellyfin in Settings → Users
+
+---
+
 ### Sonarr (`/srv/server/sonarr`)
 **Status:** ✅ Running  
-**URL:** https://sonarr.example.com  
-**Port:** 8989  
+**Port:** 8989 (LAN only)  
 **Docker Compose:** `sonarr/docker-compose.yml`
 
 - TV show management & automation
@@ -144,8 +163,7 @@ All services running on the home server. Each has its own configuration director
 
 ### Radarr (`/srv/server/radarr`)
 **Status:** ✅ Running  
-**URL:** https://radarr.example.com  
-**Port:** 7878  
+**Port:** 7878 (LAN only)  
 **Docker Compose:** `radarr/docker-compose.yml`
 
 - Movie management & automation
@@ -166,37 +184,29 @@ All services running on the home server. Each has its own configuration director
 
 ### Prowlarr (`/srv/server/prowlarr`)
 **Status:** ✅ Running  
-**URL:** https://prowlarr.example.com  
-**Port:** 9696  
+**Port:** 9696 (LAN only)  
 **Docker Compose:** `prowlarr/docker-compose.yml`
 
 - Indexer manager — single place to configure torrent/usenet indexers
 - Auto-syncs indexers to Sonarr and Radarr
 - Supports TPB, 1337x, Nyaa, and many more
+- Uses FlareSolverr to bypass Cloudflare on protected indexers
 
 **Common Issues:**
 - Indexers failing → Check VPN connectivity, indexer may be down
+- Cloudflare blocked → Ensure FlareSolverr tag is applied to the indexer
 - Not syncing to Sonarr/Radarr → Re-add app connections in Settings → Apps
 
-**Torrent Search Script:** `scripts/torrent-search.sh`
-- Search torrents from Telegram via OpenClaw
-- Sources: TPB, 1337x, Nyaa
-- Auto-sends magnet links to Transmission
-- Usage: Ask the OpenClaw agent to "search for [query] torrent"
+---
 
-**Commands:**
-```bash
-# List active torrents
-transmission-remote 127.0.0.1:9091 --list
+### FlareSolverr (`/srv/server/flaresolverr`)
+**Status:** ✅ Running  
+**Port:** 8191 (LAN only)  
+**Docker Compose:** `flaresolverr/docker-compose.yml`
 
-# Add magnet via CLI
-transmission-remote 127.0.0.1:9091 --add "magnet:?..."
-
-# Search via script
-./scripts/torrent-search.sh search "query"
-./scripts/torrent-search.sh download "magnet:?..." /srv/media/downloads/movies
-./scripts/torrent-search.sh status
-```
+- Bypasses Cloudflare protection for Prowlarr indexers
+- Configured in Prowlarr: Settings → Indexers → Add FlareSolverr proxy (`http://flaresolverr:8191`)
+- Apply the FlareSolverr tag to any indexer that gets Cloudflare-blocked
 
 **Common Issues:**
 - Port blocked → Check firewall: `ss -ltn | grep 9091`

@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-stacks=(nextcloud immich ha jellyfin jellyseerr calibre navidrome audiobookshelf mollysocket adguard proxy)
+stacks=(nextcloud immich ha jellyfin jellyseerr calibre navidrome audiobookshelf mollysocket adguard proxy transmission sonarr radarr prowlarr flaresolverr)
 COMPOSE_WAIT_TIMEOUT="${COMPOSE_WAIT_TIMEOUT:-600}"
 NEXTCLOUD_AUTO_FIX="${NEXTCLOUD_AUTO_FIX:-true}"
 compose_wait_supported=false
@@ -19,6 +19,9 @@ ensure_shared_media_dirs() {
     /srv/media/music
     /srv/media/audiobooks
     /srv/media/podcasts
+    /srv/media/movies
+    /srv/media/series
+    /srv/media/downloads
   )
   local missing=()
   local path
@@ -53,12 +56,6 @@ else
 fi
 
 for stack in "${stacks[@]}"; do
-  if [[ ! -f "$stack/.env" ]]; then
-    echo "Missing $stack/.env"
-    echo "Run ./scripts/init-env.sh and fill all required values before deploy."
-    exit 1
-  fi
-
   echo "Starting stack: $stack"
   (
     cd "$stack"

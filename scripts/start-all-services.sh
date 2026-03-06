@@ -20,6 +20,10 @@ services=(
     "adguard"
     "transmission"
     "mollysocket"
+    "sonarr"
+    "radarr"
+    "prowlarr"
+    "flaresolverr"
 )
 
 echo "🚀 Starting all services..."

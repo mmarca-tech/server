@@ -4,8 +4,11 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
+    ports:
+      - "5055:5055"
     networks:
       - proxy
+      - home-network
     volumes:
       - /srv/jellyseerr/config:/app/config
     env_file:
@@ -15,4 +18,6 @@ services:
 
 networks:
   proxy:
+    external: true
+  home-network:
     external: true

@@ -11,7 +11,7 @@ project_name_for_stack() {
 
 if [[ $# -lt 1 ]]; then
   echo "Usage: $0 <stack> [service]"
-  echo "Stacks: proxy nextcloud immich ha jellyfin jellyseerr calibre navidrome audiobookshelf mollysocket adguard"
+  echo "Stacks: proxy nextcloud immich ha jellyfin jellyseerr calibre navidrome audiobookshelf mollysocket adguard transmission sonarr radarr prowlarr flaresolverr"
   exit 1
 fi
 
@@ -20,12 +20,6 @@ service="${2:-}"
 
 if [[ ! -f "$stack/docker-compose.yml" ]]; then
   echo "Unknown stack: $stack"
-  exit 1
-fi
-
-if [[ ! -f "$stack/.env" ]]; then
-  echo "Missing $stack/.env"
-  echo "Run ./scripts/init-env.sh before managing stacks."
   exit 1
 fi
 

@@ -89,6 +89,19 @@ cd /srv/server
 git log --oneline -10
 ```
 
+### Media Automation (Sonarr/Radarr/Prowlarr)
+
+```bash
+# Web UIs (LAN only)
+# Prowlarr (indexers):  http://SERVER_IP:9696
+# Sonarr (TV):          http://SERVER_IP:8989
+# Radarr (movies):      http://SERVER_IP:7878
+# Jellyseerr (requests): http://SERVER_IP:5055
+
+# Request flow:
+# Jellyseerr → Sonarr/Radarr → Prowlarr → Transmission (VPN) → auto-sort → Jellyfin
+```
+
 ### Torrents (via Telegram or CLI)
 
 ```bash

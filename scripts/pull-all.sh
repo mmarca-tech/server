@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-stacks=(proxy nextcloud immich ha jellyfin jellyseerr calibre navidrome audiobookshelf mollysocket adguard)
+stacks=(proxy nextcloud immich ha jellyfin jellyseerr calibre navidrome audiobookshelf mollysocket adguard transmission sonarr radarr prowlarr flaresolverr)
 
 project_name_for_stack() {
   local stack="$1"
@@ -12,12 +12,6 @@ project_name_for_stack() {
 }
 
 for stack in "${stacks[@]}"; do
-  if [[ ! -f "$stack/.env" ]]; then
-    echo "Missing $stack/.env"
-    echo "Run ./scripts/init-env.sh before pulling stacks."
-    exit 1
-  fi
-
   echo "Pulling images for stack: $stack"
   (
     cd "$stack"
