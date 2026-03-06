@@ -171,7 +171,7 @@ Generates timestamped reports in:
 ./scripts/torrent-search.sh search "movie name"
 
 # Download via Transmission
-./scripts/torrent-search.sh download "magnet:?xt=urn:btih:..." /srv/media/downloads/movies
+./scripts/torrent-search.sh download "magnet:?xt=urn:btih:..." /srv/media/downloads
 
 # List active Transmission torrents
 ./scripts/torrent-search.sh status

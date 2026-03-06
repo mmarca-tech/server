@@ -75,7 +75,12 @@ sudo ./scripts/deploy-all.sh
 ├── proxy/
 │   ├── docker-compose.yml          ← Caddy setup
 │   └── Caddyfile                   ← Reverse proxy config
-├── transmission/
+├── transmission/                    ← Torrent client (VPN via gluetun)
+├── sonarr/                         ← TV show automation
+├── radarr/                         ← Movie automation
+├── prowlarr/                       ← Indexer manager
+├── flaresolverr/                   ← Cloudflare bypass for Prowlarr
+├── jellyseerr/                     ← Media request UI
 ├── nextcloud/
 ├── jellyfin/
 └── ... (other services)
