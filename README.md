@@ -352,6 +352,9 @@ make down
 - `radarr/` Radarr movie automation
 - `prowlarr/` Prowlarr indexer manager
 - `flaresolverr/` FlareSolverr Cloudflare bypass for Prowlarr
+- `bazarr/` Bazarr automatic subtitle downloads
+- `tdarr/` Tdarr automatic media transcoding
+- `recyclarr/` Recyclarr TRaSH Guides quality profile sync
 - `mollysocket/` Mollysocket
 - `adguard/` AdGuard Home (LAN-only DNS filtering)
 - `openclaw/` OpenClaw host config (`/etc/openclaw/openclaw.env`) + systemd unit template

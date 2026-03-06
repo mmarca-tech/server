@@ -80,6 +80,9 @@ sudo ./scripts/deploy-all.sh
 ├── radarr/                         ← Movie automation
 ├── prowlarr/                       ← Indexer manager
 ├── flaresolverr/                   ← Cloudflare bypass for Prowlarr
+├── bazarr/                         ← Automatic subtitle downloads
+├── tdarr/                          ← Media transcoding
+├── recyclarr/                      ← TRaSH quality profile sync
 ├── jellyseerr/                     ← Media request UI
 ├── nextcloud/
 ├── jellyfin/

@@ -24,6 +24,9 @@ services=(
     "radarr"
     "prowlarr"
     "flaresolverr"
+    "bazarr"
+    "tdarr"
+    "recyclarr"
 )
 
 echo "🚀 Starting all services..."

@@ -93,10 +93,12 @@ git log --oneline -10
 
 ```bash
 # Web UIs (LAN only)
-# Prowlarr (indexers):  http://SERVER_IP:9696
-# Sonarr (TV):          http://SERVER_IP:8989
-# Radarr (movies):      http://SERVER_IP:7878
+# Prowlarr (indexers):   http://SERVER_IP:9696
+# Sonarr (TV):           http://SERVER_IP:8989
+# Radarr (movies):       http://SERVER_IP:7878
 # Jellyseerr (requests): http://SERVER_IP:5055
+# Bazarr (subtitles):    http://SERVER_IP:6767
+# Tdarr (transcoding):   http://SERVER_IP:8265
 
 # Request flow:
 # Jellyseerr → Sonarr/Radarr → Prowlarr → Transmission (VPN) → auto-sort → Jellyfin

@@ -212,6 +212,72 @@ All services running on the home server. Each has its own configuration director
 - Configured in Prowlarr: Settings → Indexers → Add FlareSolverr proxy (`http://flaresolverr:8191`)
 - Apply the FlareSolverr tag to any indexer that gets Cloudflare-blocked
 
+---
+
+### Bazarr (`/srv/server/bazarr`)
+**Status:** ✅ Running  
+**Port:** 6767 (LAN only)  
+**Docker Compose:** `bazarr/docker-compose.yml`
+
+- Automatic subtitle downloads for Sonarr & Radarr
+- Supports OpenSubtitles, Addic7ed, Subscene, and many more
+- Monitors media libraries and downloads missing subtitles
+- Integrates directly with Sonarr and Radarr via API
+
+**Setup:**
+1. Settings → Sonarr: `http://sonarr:8989` + API key
+2. Settings → Radarr: `http://radarr:7878` + API key
+3. Settings → Providers: add subtitle providers (OpenSubtitles, etc.)
+4. Settings → Languages: configure desired subtitle languages
+
+**Common Issues:**
+- No subtitles found → Add more providers, check language settings
+- Wrong subtitles → Adjust anti-false-positive settings, use hearing-impaired filter
+
+---
+
+### Tdarr (`/srv/server/tdarr`)
+**Status:** ✅ Running  
+**Port:** 8265 (Web UI, LAN only), 8266 (server)  
+**Docker Compose:** `tdarr/docker-compose.yml`
+
+- Automatic media transcoding (e.g., H.264 → H.265/HEVC for space savings)
+- Monitors media libraries and processes files based on rules
+- Built-in node for processing (runs inside the same container)
+- Transcode cache at `/srv/tdarr/transcode_cache` (needs fast storage)
+
+**Media Paths (inside container):**
+- `/media/movies`, `/media/series`, `/media/music` (same shared mount)
+
+**Setup:**
+1. Libraries → Add library → point to `/media/movies` or `/media/series`
+2. Transcode options → choose plugins (e.g., "Tiered: H.265, keep quality")
+3. Set schedule to avoid transcoding during peak viewing hours
+
+**Common Issues:**
+- High CPU during transcode → Set worker limits in Tdarr node settings
+- Disk space spikes → Transcode cache needs space for temp files, set cache dir to fast disk
+- Quality loss → Use CRF-based encoding, avoid aggressive bitrate targets
+
+---
+
+### Recyclarr (`/srv/server/recyclarr`)
+**Status:** ✅ Running (periodic sync)  
+**Docker Compose:** `recyclarr/docker-compose.yml`
+
+- Syncs TRaSH Guides quality profiles to Sonarr and Radarr
+- Automatically configures optimal custom formats and quality scores
+- Runs on schedule (configurable in `recyclarr.yml`)
+
+**Setup:**
+1. Copy template: `cp /srv/server/recyclarr/recyclarr.yml.template /srv/recyclarr/config/recyclarr.yml`
+2. Edit and add Sonarr/Radarr API keys
+3. Manual sync: `docker exec recyclarr recyclarr sync`
+
+**Common Issues:**
+- Sync failing → Check API keys and URLs in recyclarr.yml
+- Profiles not appearing → Run manual sync, check logs: `docker logs recyclarr`
+
 **Common Issues:**
 - Port blocked → Check firewall: `ss -ltn | grep 9091`
 - Slow downloads → Check peer port (6969/51413) is open on router

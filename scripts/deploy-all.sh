@@ -44,8 +44,10 @@ bash /srv/server/scripts/install-docker.sh
 echo ""
 echo -e "${YELLOW}📁 Step 3: Creating Directory Structure${NC}"
 mkdir -p /srv/media/{downloads,downloads/incomplete,movies,series,music,audiobooks,podcasts}
-mkdir -p /srv/{sonarr,radarr,prowlarr}/config
-chown -R "$USERNAME:$USERNAME" /srv/{sonarr,radarr,prowlarr}
+mkdir -p /srv/{sonarr,radarr,prowlarr,bazarr}/config
+mkdir -p /srv/tdarr/{server,configs,logs,transcode_cache}
+mkdir -p /srv/recyclarr/config
+chown -R "$USERNAME:$USERNAME" /srv/{sonarr,radarr,prowlarr,bazarr,tdarr,recyclarr}
 mkdir -p /srv/server
 
 echo "✅ Directory structure created"

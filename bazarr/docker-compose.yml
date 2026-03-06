@@ -1,0 +1,22 @@
+services:
+  bazarr:
+    image: linuxserver/bazarr:latest
+    container_name: bazarr
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - home-network
+    ports:
+      - "6767:6767"
+    volumes:
+      - /srv/bazarr/config:/config
+      - /srv/media:/media
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Tallinn
+
+networks:
+  home-network:
+    external: true

@@ -1,0 +1,17 @@
+services:
+  recyclarr:
+    image: ghcr.io/recyclarr/recyclarr:latest
+    container_name: recyclarr
+    restart: unless-stopped
+    networks:
+      - home-network
+    volumes:
+      - /srv/recyclarr/config:/config
+    environment:
+      - TZ=Europe/Tallinn
+      # Runs sync automatically on schedule defined in recyclarr.yml
+      # Manual sync: docker exec recyclarr recyclarr sync
+
+networks:
+  home-network:
+    external: true

@@ -218,6 +218,9 @@ After deployment, you'll have:
 │   ├── radarr/              # Movie automation
 │   ├── prowlarr/            # Indexer manager
 │   ├── flaresolverr/       # Cloudflare bypass for Prowlarr
+│   ├── bazarr/             # Automatic subtitles
+│   ├── tdarr/              # Media transcoding
+│   ├── recyclarr/          # TRaSH quality profiles
 │   ├── mollysocket/          # Signal relay
 │   ├── scripts/              # Automation & helper scripts
 │   └── DEPLOYMENT.md         # This file
