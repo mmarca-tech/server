@@ -1,4 +1,6 @@
 **/.env
+*.bak
+*.torrent
 
 # Transmission runtime data (changes on every run)
 transmission/config/dht.dat
