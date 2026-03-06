@@ -1,6 +1,7 @@
 services:
   jellyseerr:
     image: ghcr.io/seerr-team/seerr:latest
+    container_name: jellyseerr
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
