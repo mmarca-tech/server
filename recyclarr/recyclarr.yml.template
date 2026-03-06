@@ -1,23 +1,19 @@
 # Recyclarr Configuration
-# Copy to /srv/recyclarr/config/recyclarr.yml and fill in API keys
-# Get API keys from: Sonarr/Radarr → Settings → General → API Key
 #
-# Uses TRaSH Guides built-in templates (auto-updated by Recyclarr)
-# List available templates: docker exec recyclarr recyclarr config list templates
-# Docs: https://recyclarr.dev/wiki/guide-configs/
-
-sonarr:
-  tv-shows:
-    base_url: http://sonarr:8989
-    api_key: YOUR_SONARR_API_KEY
-
-    include:
-      - template: web-1080p
-
-radarr:
-  movies:
-    base_url: http://radarr:7878
-    api_key: YOUR_RADARR_API_KEY
-
-    include:
-      - template: hd-bluray-web
+# DON'T edit this file directly. Instead, generate configs from templates:
+#
+#   docker exec recyclarr recyclarr config create -t web-1080p -t hd-bluray-web
+#
+# This creates files under /srv/recyclarr/config/configs/ with proper TRaSH profiles.
+# Edit each generated file to set base_url and api_key, then sync:
+#
+#   docker exec recyclarr recyclarr sync
+#
+# List all available templates:
+#   docker exec recyclarr recyclarr config list templates
+#
+# Sonarr templates: web-1080p, web-2160p, web-1080p-alternative, ...
+# Radarr templates: hd-bluray-web, remux-web-1080p, uhd-bluray-web, ...
+#
+# Sonarr API key: Settings -> General -> API Key (http://SERVER_IP:8989)
+# Radarr API key: Settings -> General -> API Key (http://SERVER_IP:7878)

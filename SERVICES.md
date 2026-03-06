@@ -270,9 +270,11 @@ All services running on the home server. Each has its own configuration director
 - Runs on schedule (configurable in `recyclarr.yml`)
 
 **Setup:**
-1. Copy template: `cp /srv/server/recyclarr/recyclarr.yml.template /srv/recyclarr/config/recyclarr.yml`
-2. Edit and add Sonarr/Radarr API keys
-3. Manual sync: `docker exec recyclarr recyclarr sync`
+1. Generate configs from TRaSH templates:
+   `docker exec recyclarr recyclarr config create -t web-1080p -t hd-bluray-web`
+2. Edit generated files in `/srv/recyclarr/config/configs/` — set `base_url` and `api_key` for each
+3. Sync: `docker exec recyclarr recyclarr sync`
+4. List all templates: `docker exec recyclarr recyclarr config list templates`
 
 **Common Issues:**
 - Sync failing → Check API keys and URLs in recyclarr.yml
