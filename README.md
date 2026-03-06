@@ -348,6 +348,9 @@ make down
 - `navidrome/` Navidrome music server
 - `audiobookshelf/` Audiobookshelf audiobook server
 - `transmission/` Transmission torrent client + gluetun VPN sidecar (ProtonVPN WireGuard)
+- `sonarr/` Sonarr TV show automation
+- `radarr/` Radarr movie automation
+- `prowlarr/` Prowlarr indexer manager
 - `mollysocket/` Mollysocket
 - `adguard/` AdGuard Home (LAN-only DNS filtering)
 - `openclaw/` OpenClaw host config (`/etc/openclaw/openclaw.env`) + systemd unit template

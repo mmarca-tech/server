@@ -57,6 +57,9 @@ Home server running on a Debian 13 laptop with Docker Compose, Caddy reverse pro
 | **Calibre** | calibre-web | 8083 | ✅ | E-book management |
 | **Transmission** | transmission | 9091 | ✅ | Torrent client (via gluetun VPN) |
 | **Gluetun** | gluetun | - | ✅ | ProtonVPN WireGuard sidecar for Transmission |
+| **Sonarr** | sonarr | 8989 | ✅ | TV show automation (download + organize) |
+| **Radarr** | radarr | 7878 | ✅ | Movie automation (download + organize) |
+| **Prowlarr** | prowlarr | 9696 | ✅ | Indexer manager for Sonarr/Radarr |
 
 ### Smart Home & Utilities
 

@@ -118,6 +118,66 @@ All services running on the home server. Each has its own configuration director
 - TV: `/srv/media/downloads/tv`
 - General: `/srv/media/downloads`
 
+---
+
+### Sonarr (`/srv/server/sonarr`)
+**Status:** ✅ Running  
+**URL:** https://sonarr.example.com  
+**Port:** 8989  
+**Docker Compose:** `sonarr/docker-compose.yml`
+
+- TV show management & automation
+- Monitors for new episodes, auto-downloads via Transmission
+- Moves & renames completed downloads to `/srv/media/series/`
+- Integrates with Prowlarr (indexers) and Jellyseerr (requests)
+
+**Media Paths (inside container):**
+- Root folder: `/media/series`
+- Downloads: `/media/downloads`
+
+**Common Issues:**
+- Import failing → Check permissions on `/srv/media/series` (needs PUID 1000)
+- Not finding episodes → Check Prowlarr indexer sync
+- Quality upgrades not working → Check quality profile cutoff settings
+
+---
+
+### Radarr (`/srv/server/radarr`)
+**Status:** ✅ Running  
+**URL:** https://radarr.example.com  
+**Port:** 7878  
+**Docker Compose:** `radarr/docker-compose.yml`
+
+- Movie management & automation
+- Monitors for new releases, auto-downloads via Transmission
+- Moves & renames completed downloads to `/srv/media/movies/`
+- Integrates with Prowlarr (indexers) and Jellyseerr (requests)
+
+**Media Paths (inside container):**
+- Root folder: `/media/movies`
+- Downloads: `/media/downloads`
+
+**Common Issues:**
+- Import failing → Check permissions on `/srv/media/movies` (needs PUID 1000)
+- Not finding movies → Check Prowlarr indexer sync
+- Wrong quality grabbed → Adjust quality profile
+
+---
+
+### Prowlarr (`/srv/server/prowlarr`)
+**Status:** ✅ Running  
+**URL:** https://prowlarr.example.com  
+**Port:** 9696  
+**Docker Compose:** `prowlarr/docker-compose.yml`
+
+- Indexer manager — single place to configure torrent/usenet indexers
+- Auto-syncs indexers to Sonarr and Radarr
+- Supports TPB, 1337x, Nyaa, and many more
+
+**Common Issues:**
+- Indexers failing → Check VPN connectivity, indexer may be down
+- Not syncing to Sonarr/Radarr → Re-add app connections in Settings → Apps
+
 **Torrent Search Script:** `scripts/torrent-search.sh`
 - Search torrents from Telegram via OpenClaw
 - Sources: TPB, 1337x, Nyaa

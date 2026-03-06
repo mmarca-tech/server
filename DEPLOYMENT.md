@@ -214,6 +214,9 @@ After deployment, you'll have:
 │   ├── ha/                   # Home Assistant
 │   ├── adguard/              # DNS + ad-blocking
 │   ├── transmission/         # Torrent client (VPN via gluetun/ProtonVPN)
+│   ├── sonarr/              # TV show automation
+│   ├── radarr/              # Movie automation
+│   ├── prowlarr/            # Indexer manager
 │   ├── mollysocket/          # Signal relay
 │   ├── scripts/              # Automation & helper scripts
 │   └── DEPLOYMENT.md         # This file

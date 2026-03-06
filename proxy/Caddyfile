@@ -61,3 +61,18 @@ transmission.{$ROOT_DOMAIN} {
   reverse_proxy transmission:9091
 }
 
+sonarr.{$ROOT_DOMAIN} {
+  import secure_headers
+  reverse_proxy sonarr:8989
+}
+
+radarr.{$ROOT_DOMAIN} {
+  import secure_headers
+  reverse_proxy radarr:7878
+}
+
+prowlarr.{$ROOT_DOMAIN} {
+  import secure_headers
+  reverse_proxy prowlarr:9696
+}
+

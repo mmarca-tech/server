@@ -1,0 +1,25 @@
+services:
+  radarr:
+    image: linuxserver/radarr:latest
+    container_name: radarr
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+      - home-network
+    ports:
+      - "7878:7878"
+    volumes:
+      - /srv/radarr/config:/config
+      - /srv/media:/media
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Tallinn
+
+networks:
+  proxy:
+    external: true
+  home-network:
+    external: true

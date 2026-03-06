@@ -1,0 +1,25 @@
+services:
+  sonarr:
+    image: linuxserver/sonarr:latest
+    container_name: sonarr
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+      - home-network
+    ports:
+      - "8989:8989"
+    volumes:
+      - /srv/sonarr/config:/config
+      - /srv/media:/media
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Tallinn
+
+networks:
+  proxy:
+    external: true
+  home-network:
+    external: true

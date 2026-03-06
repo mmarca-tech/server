@@ -5,5 +5,6 @@
 # Transmission runtime data (changes on every run)
 transmission/config/dht.dat
 transmission/config/stats.json
+transmission/config/queue.json
 transmission/config/resume/
 transmission/config/torrents/
