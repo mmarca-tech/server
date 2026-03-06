@@ -3,6 +3,7 @@
 # Get API keys from: Sonarr/Radarr → Settings → General → API Key
 #
 # Uses TRaSH Guides built-in templates (auto-updated by Recyclarr)
+# List available templates: docker exec recyclarr recyclarr config list templates
 # Docs: https://recyclarr.dev/wiki/guide-configs/
 
 sonarr:
@@ -11,10 +12,7 @@ sonarr:
     api_key: YOUR_SONARR_API_KEY
 
     include:
-      # WEB-1080p quality profile from TRaSH Guides
-      - template: sonarr-quality-definition-series
-      - template: sonarr-v4-quality-profile-web-1080p
-      - template: sonarr-v4-custom-formats-web-1080p
+      - template: web-1080p
 
 radarr:
   movies:
@@ -22,7 +20,4 @@ radarr:
     api_key: YOUR_RADARR_API_KEY
 
     include:
-      # HD Bluray + WEB quality profile from TRaSH Guides
-      - template: radarr-quality-definition-movie
-      - template: radarr-quality-profile-hd-bluray-web
-      - template: radarr-custom-formats-hd-bluray-web
+      - template: hd-bluray-web
