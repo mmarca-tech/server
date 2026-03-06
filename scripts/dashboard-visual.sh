@@ -32,7 +32,7 @@ echo ""
 echo "Services:"
 
 # List services
-for service in jellyfin immich-server navidrome nextcloud caddy adguard homeassistant calibre-web jellyseerr audiobookshelf; do
+for service in jellyfin immich-server navidrome nextcloud caddy adguard homeassistant calibre-web jellyseerr audiobookshelf gluetun transmission sonarr radarr prowlarr flaresolverr; do
     if docker ps -a --format "{{.Names}}" 2>/dev/null | grep -q "$service"; then
         container=$(docker ps -aqf "name=$service" 2>/dev/null | head -1)
         status=$(docker ps -a --format "{{.State}}" -f "id=$container" 2>/dev/null)
