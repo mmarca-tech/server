@@ -52,6 +52,8 @@ services:
       - /srv/media/music:/media/music
       - /srv/media/audiobooks:/media/audiobooks
       - /srv/media/podcasts:/media/podcasts
+      - /srv/media/movies:/media/movies
+      - /srv/media/series:/media/series
     env_file:
       - .env
     environment:
