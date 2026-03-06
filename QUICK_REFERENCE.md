@@ -109,7 +109,7 @@ git log --oneline -10
 /srv/server/scripts/torrent-search.sh search "movie name"
 
 # Download a magnet to Transmission
-/srv/server/scripts/torrent-search.sh download "magnet:?..." /srv/media/downloads/movies
+/srv/server/scripts/torrent-search.sh download "magnet:?..." /srv/media/downloads
 
 # List active downloads
 /srv/server/scripts/torrent-search.sh status

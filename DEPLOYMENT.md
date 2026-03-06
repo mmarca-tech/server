@@ -72,7 +72,7 @@ newgrp docker
 
 ```bash
 # Create media directory structure
-sudo mkdir -p /srv/media/{downloads,downloads/movies,downloads/tv,movies,series,music,audiobooks,podcasts}
+sudo mkdir -p /srv/media/{downloads,downloads/incomplete,movies,series,music,audiobooks,podcasts}
 sudo mkdir -p /srv/server
 
 # Set permissions
@@ -224,8 +224,9 @@ After deployment, you'll have:
 │
 └── media/                     # Shared media storage
     ├── downloads/            # Transmission downloads
-    │   ├── movies/
-    │   └── tv/
+    │   ├── incomplete/      # In-progress downloads
+    │   ├── radarr/          # Radarr category (auto-created)
+    │   └── sonarr/          # Sonarr category (auto-created)
     ├── movies/              # Jellyfin movie library
     ├── series/              # Jellyfin series library
     ├── music/               # Navidrome + Jellyfin music

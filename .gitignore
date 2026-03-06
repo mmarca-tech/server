@@ -6,5 +6,7 @@
 transmission/config/dht.dat
 transmission/config/stats.json
 transmission/config/queue.json
+transmission/config/settings.json
 transmission/config/resume/
 transmission/config/torrents/
+transmission/config/.*.swp

@@ -114,9 +114,13 @@ All services running on the home server. Each has its own configuration director
 - Backup: `transmission/docker-compose.yml.bak` (pre-VPN config)
 
 **Download Directories:**
-- Movies: `/srv/media/downloads/movies`
-- TV: `/srv/media/downloads/tv`
-- General: `/srv/media/downloads`
+- Default: `/srv/media/downloads` (container: `/downloads`)
+- Incomplete: `/srv/media/downloads/incomplete` (container: `/downloads/incomplete`)
+- Radarr category: `/srv/media/downloads/radarr` (auto-created by Radarr)
+- Sonarr category: `/srv/media/downloads/sonarr` (auto-created by Sonarr)
+
+> After download completes, Sonarr/Radarr auto-import and move files to
+> `/srv/media/series/` or `/srv/media/movies/` respectively.
 
 ---
 

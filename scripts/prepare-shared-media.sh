@@ -15,8 +15,7 @@ shared_dirs=(
   "$MEDIA_ROOT/audiobooks"
   "$MEDIA_ROOT/podcasts"
   "$MEDIA_ROOT/downloads"
-  "$MEDIA_ROOT/downloads/movies"
-  "$MEDIA_ROOT/downloads/tv"
+  "$MEDIA_ROOT/downloads/incomplete"
 )
 
 ensure_legacy_link() {

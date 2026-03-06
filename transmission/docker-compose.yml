@@ -46,11 +46,6 @@ services:
     
     volumes:
       - /srv/media/downloads:/downloads
-      - /srv/media/downloads/movies:/movies
-      - /srv/media/downloads/tv:/tv
-      - /srv/media/downloads/music:/music
-      - /srv/media/downloads/audiobooks:/audiobooks
-      - /srv/media/downloads/podcasts:/podcasts
       - ./config:/config
     
     environment:
@@ -58,7 +53,7 @@ services:
       - PGID=1000
       - TZ=Europe/Tallinn
       - TRANSMISSION_DOWNLOAD_DIR=/downloads
-      - TRANSMISSION_INCOMPLETE_DIR=/downloads/.incomplete
+      - TRANSMISSION_INCOMPLETE_DIR=/downloads/incomplete
 
 networks:
   home-network:
