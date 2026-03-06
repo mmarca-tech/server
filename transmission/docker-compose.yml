@@ -19,12 +19,12 @@ services:
     environment:
       - VPN_SERVICE_PROVIDER=protonvpn
       - VPN_TYPE=wireguard
-      - WIREGUARD_PRIVATE_KEY=IG8jvE9D4hj06pI7qvKFSNc/owkxdWBTdh8udU1tw0A=
+      - WIREGUARD_PRIVATE_KEY=SJ776xFjpYwkNXODpQyvDP/yZOauAB2IV6UhUeymc3g=
       - WIREGUARD_ADDRESSES=10.2.0.2/32
       - SERVER_COUNTRIES=Estonia
       # Enable these after regenerating WireGuard key with NAT-PMP ON in ProtonVPN dashboard:
-      # - PORT_FORWARD_ONLY=on
-      # - VPN_PORT_FORWARDING=on
+      - PORT_FORWARD_ONLY=on
+      - VPN_PORT_FORWARDING=on
       - TZ=Europe/Tallinn
     
     volumes:

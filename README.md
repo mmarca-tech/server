@@ -347,6 +347,7 @@ make down
 - `calibre/` Calibre-Web
 - `navidrome/` Navidrome music server
 - `audiobookshelf/` Audiobookshelf audiobook server
+- `transmission/` Transmission torrent client + gluetun VPN sidecar (ProtonVPN WireGuard)
 - `mollysocket/` Mollysocket
 - `adguard/` AdGuard Home (LAN-only DNS filtering)
 - `openclaw/` OpenClaw host config (`/etc/openclaw/openclaw.env`) + systemd unit template

@@ -72,7 +72,7 @@ newgrp docker
 
 ```bash
 # Create media directory structure
-sudo mkdir -p /srv/media/{downloads,movies,tv,music,audiobooks,podcasts}
+sudo mkdir -p /srv/media/{downloads,downloads/movies,downloads/tv,movies,series,music,audiobooks,podcasts}
 sudo mkdir -p /srv/server
 
 # Set permissions
@@ -213,7 +213,7 @@ After deployment, you'll have:
 │   ├── audiobookshelf/       # Audiobook streaming
 │   ├── ha/                   # Home Assistant
 │   ├── adguard/              # DNS + ad-blocking
-│   ├── transmission/         # Torrent client
+│   ├── transmission/         # Torrent client (VPN via gluetun/ProtonVPN)
 │   ├── mollysocket/          # Signal relay
 │   ├── scripts/              # Automation & helper scripts
 │   └── DEPLOYMENT.md         # This file
@@ -221,12 +221,11 @@ After deployment, you'll have:
 └── media/                     # Shared media storage
     ├── downloads/            # Transmission downloads
     │   ├── movies/
-    │   ├── tv/
-    │   ├── music/
-    │   ├── audiobooks/
-    │   └── podcasts/
-    ├── music/               # Navidrome library
-    ├── audiobooks/          # Audiobookshelf library
+    │   └── tv/
+    ├── movies/              # Jellyfin movie library
+    ├── series/              # Jellyfin series library
+    ├── music/               # Navidrome + Jellyfin music
+    ├── audiobooks/          # Audiobookshelf + Jellyfin audiobooks
     └── podcasts/            # Podcast storage
 ```
 

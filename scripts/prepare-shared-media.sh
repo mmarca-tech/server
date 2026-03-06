@@ -9,9 +9,14 @@ MEDIA_ROOT="$SRV_ROOT/media"
 
 shared_dirs=(
   "$MEDIA_ROOT"
+  "$MEDIA_ROOT/movies"
+  "$MEDIA_ROOT/series"
   "$MEDIA_ROOT/music"
   "$MEDIA_ROOT/audiobooks"
   "$MEDIA_ROOT/podcasts"
+  "$MEDIA_ROOT/downloads"
+  "$MEDIA_ROOT/downloads/movies"
+  "$MEDIA_ROOT/downloads/tv"
 )
 
 ensure_legacy_link() {

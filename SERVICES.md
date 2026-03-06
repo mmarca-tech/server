@@ -9,12 +9,21 @@ All services running on the home server. Each has its own configuration director
 ### Jellyfin (`/srv/server/jellyfin`)
 **Status:** ✅ Running  
 **URL:** https://jellyfin.example.com  
+**Port:** 8096 (exposed directly + via Caddy reverse proxy)  
 **Docker Compose:** `jellyfin/docker-compose.yml`
 
 - Stream movies, shows, music
 - Auto-library indexing
 - Transcoding enabled
 - Metadata from The Movie Database
+
+**Media Libraries (shared `/srv/media` layout):**
+- `/srv/media/series` → `/media/series` (read-only)
+- `/srv/media/movies` → `/media/movies` (read-only)
+- `/srv/media/music` → `/media/music` (read-only)
+- `/srv/media/audiobooks` → `/media/audiobooks` (read-only)
+
+> Previously used a single `/srv/jellyfin/media` mount. Now shares the centralised `/srv/media` tree with other services (Navidrome, Audiobookshelf, Transmission downloads).
 
 **Common Issues:**
 - Indexing slow → Check storage I/O, reduce scan frequency
@@ -93,6 +102,16 @@ All services running on the home server. Each has its own configuration director
 - Web-based UI
 - Remote control via `transmission-remote`
 - Integrated with OpenClaw for Telegram-based search & download
+- **VPN:** All traffic routed through ProtonVPN via gluetun (WireGuard)
+- **Port forwarding:** Enabled via ProtonVPN NAT-PMP for better peer connectivity
+
+**VPN Details (gluetun sidecar):**
+- Provider: ProtonVPN (WireGuard)
+- Server region: Estonia
+- Port forwarding: ✅ Enabled (`VPN_PORT_FORWARDING=on`, `PORT_FORWARD_ONLY=on`)
+- Transmission network mode: `network_mode: "service:gluetun"` (all traffic goes through VPN)
+- Config: `transmission/gluetun/` (servers.json cached locally)
+- Backup: `transmission/docker-compose.yml.bak` (pre-VPN config)
 
 **Download Directories:**
 - Movies: `/srv/media/downloads/movies`

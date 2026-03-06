@@ -29,6 +29,7 @@ Home server running on a Debian 13 laptop with Docker Compose, Caddy reverse pro
          │
          ├─→ Docker Containers
          │   ├─ Media (Jellyfin, Immich, Navidrome)
+         │   ├─ Downloads (Transmission + gluetun VPN)
          │   ├─ Smart Home (Home Assistant)
          │   ├─ Utilities (Nextcloud, Calibre)
          │   ├─ Ad-blocking (AdGuard)
@@ -54,6 +55,8 @@ Home server running on a Debian 13 laptop with Docker Compose, Caddy reverse pro
 | **Jellyseerr** | jellyseerr | 5055 | ✅ | Request/wishlist management |
 | **Audiobookshelf** | audiobookshelf | 80 | ✅ | Audiobook library |
 | **Calibre** | calibre-web | 8083 | ✅ | E-book management |
+| **Transmission** | transmission | 9091 | ✅ | Torrent client (via gluetun VPN) |
+| **Gluetun** | gluetun | - | ✅ | ProtonVPN WireGuard sidecar for Transmission |
 
 ### Smart Home & Utilities
 

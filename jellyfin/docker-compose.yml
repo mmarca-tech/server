@@ -4,12 +4,17 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
+    ports:
+      - "8096:8096"
     networks:
       - proxy
     volumes:
       - /srv/jellyfin/config:/config
       - /srv/jellyfin/cache:/cache
-      - /srv/jellyfin/media:/media:ro
+      - /srv/media/series:/media/series:ro
+      - /srv/media/movies:/media/movies:ro
+      - /srv/media/music:/media/music:ro
+      - /srv/media/audiobooks:/media/audiobooks:ro
     env_file:
       - .env
 
