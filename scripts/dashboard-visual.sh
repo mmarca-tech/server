@@ -29,22 +29,59 @@ echo "${BLUE}${BOLD}DOCKER CONTAINERS${RESET}"
 echo "─────────────────────────────────────────"
 echo "Running: ${GREEN}${RUNNING}${RESET} / ${TOTAL}"
 echo ""
-echo "Services:"
 
-# List services
-for service in jellyfin immich-server navidrome nextcloud caddy adguard homeassistant calibre-web jellyseerr audiobookshelf gluetun transmission sonarr radarr prowlarr flaresolverr bazarr tdarr recyclarr; do
-    if docker ps -a --format "{{.Names}}" 2>/dev/null | grep -q "$service"; then
-        container=$(docker ps -aqf "name=$service" 2>/dev/null | head -1)
+# Helper function to print container status
+print_service() {
+    local label="$1"
+    local search="$2"
+    if docker ps -a --format "{{.Names}}" 2>/dev/null | grep -q "$search"; then
+        container=$(docker ps -aqf "name=$search" 2>/dev/null | head -1)
         status=$(docker ps -a --format "{{.State}}" -f "id=$container" 2>/dev/null)
         uptime=$(docker ps -a --format "{{.RunningFor}}" -f "id=$container" 2>/dev/null | sed 's/ ago//' | cut -d' ' -f1-2)
-        
         if [ "$status" = "running" ]; then
-            printf "  ${GREEN}✓${RESET} %-20s ${GREEN}%s${RESET}\n" "$service" "$uptime"
+            printf "  ${GREEN}✓${RESET} %-28s ${GREEN}%s${RESET}\n" "$label" "$uptime"
         else
-            printf "  ${RED}✗${RESET} %-20s ${RED}(stopped)${RESET}\n" "$service"
+            printf "  ${RED}✗${RESET} %-28s ${RED}(stopped)${RESET}\n" "$label"
         fi
+    else
+        printf "  ${GRAY}–${RESET} %-28s ${GRAY}(not found)${RESET}\n" "$label"
     fi
-done
+}
+
+echo "${GRAY}  Infrastructure${RESET}"
+print_service "caddy"                   "caddy"
+print_service "adguard"                 "adguard"
+print_service "homeassistant"           "homeassistant"
+print_service "mollysocket"             "mollysocket"
+
+echo "${GRAY}  Media${RESET}"
+print_service "jellyfin"                "jellyfin"
+print_service "jellyseerr"              "jellyseerr"
+print_service "navidrome"               "navidrome"
+print_service "audiobookshelf"          "audiobookshelf"
+print_service "calibre-web"             "calibre-web"
+
+echo "${GRAY}  Arr Stack${RESET}"
+print_service "sonarr"                  "sonarr"
+print_service "radarr"                  "radarr"
+print_service "prowlarr"                "prowlarr"
+print_service "bazarr"                  "bazarr"
+print_service "tdarr"                   "tdarr"
+print_service "recyclarr"               "recyclarr"
+print_service "flaresolverr"            "flaresolverr"
+
+echo "${GRAY}  Downloads${RESET}"
+print_service "gluetun"                 "gluetun"
+print_service "transmission"            "transmission"
+
+echo "${GRAY}  Cloud / Photos${RESET}"
+print_service "nextcloud"               "nextcloud$"
+print_service "nextcloud-db"            "nextcloud-db"
+print_service "nextcloud-redis"         "nextcloud-redis"
+print_service "immich-server"           "immich-server"
+print_service "immich-machine-learning" "immich-machine"
+print_service "immich-db"               "immich-db"
+print_service "immich-redis"            "immich-redis"
 
 # ── VPN STATUS ──────────────────────────────────────────────
 echo ""
@@ -128,39 +165,43 @@ echo ""
 echo "${BLUE}${BOLD}DISK USAGE${RESET}"
 echo "─────────────────────────────────────────"
 
+# Print a disk bar: label, usage%, total size string
+print_disk_bar() {
+    local label="$1"
+    local usage="$2"
+    local info="$3"
+    printf "  %-18s" "$label"
+    if [ "$usage" -lt 80 ]; then
+        printf "${GREEN}"
+    elif [ "$usage" -lt 90 ]; then
+        printf "${YELLOW}"
+    else
+        printf "${RED}"
+    fi
+    for ((i=0; i<$((usage/5)); i++)); do printf "█"; done
+    printf "${GRAY}"
+    for ((i=0; i<$((20-usage/5)); i++)); do printf "░"; done
+    printf "${RESET} %3d%%  ${GRAY}%s${RESET}\n" "$usage" "$info"
+}
+
+# Main NVMe drive (/ — everything lives here)
 ROOT_USAGE=$(df / 2>/dev/null | awk 'NR==2 {print $5}' | sed 's/%//')
-SRV_USAGE=$(df /srv 2>/dev/null | awk 'NR==2 {print $5}' | sed 's/%//')
+ROOT_INFO=$(df -h / 2>/dev/null | awk 'NR==2 {print $3 " / " $2 " used"}')
+print_disk_bar "nvme0n1p2 (/)" "$ROOT_USAGE" "$ROOT_INFO"
 
-# Root disk bar
-printf "  / (Root):     "
-if [ "$ROOT_USAGE" -lt 80 ]; then
-    printf "${GREEN}"
-else
-    printf "${RED}"
-fi
-for ((i=0; i<$((ROOT_USAGE/5)); i++)); do printf "█"; done
-printf "${GRAY}"
-for ((i=0; i<$((20-ROOT_USAGE/5)); i++)); do printf "░"; done
-printf "${RESET} %3d%% ${RESET}\n" "$ROOT_USAGE"
-
-# /srv disk bar
-printf "  /srv (Media):  "
-if [ "$SRV_USAGE" -lt 80 ]; then
-    printf "${GREEN}"
-else
-    printf "${RED}"
-fi
-for ((i=0; i<$((SRV_USAGE/5)); i++)); do printf "█"; done
-printf "${GRAY}"
-for ((i=0; i<$((20-SRV_USAGE/5)); i++)); do printf "░"; done
-printf "${RESET} %3d%% ${RESET}\n" "$SRV_USAGE"
+# EFI partition
+EFI_USAGE=$(df /boot/efi 2>/dev/null | awk 'NR==2 {print $5}' | sed 's/%//')
+EFI_INFO=$(df -h /boot/efi 2>/dev/null | awk 'NR==2 {print $3 " / " $2 " used"}')
+[ -n "$EFI_USAGE" ] && print_disk_bar "nvme0n1p1 (EFI)" "$EFI_USAGE" "$EFI_INFO"
 
 # Media breakdown
+echo ""
 MOVIES_SIZE=$(du -sh /srv/media/movies 2>/dev/null | awk '{print $1}')
 SERIES_SIZE=$(du -sh /srv/media/series 2>/dev/null | awk '{print $1}')
 MUSIC_SIZE=$(du -sh /srv/media/music 2>/dev/null | awk '{print $1}')
+BOOKS_SIZE=$(du -sh /srv/media/books 2>/dev/null | awk '{print $1}')
 DL_SIZE=$(du -sh /srv/media/downloads 2>/dev/null | awk '{print $1}')
-[ -n "$MOVIES_SIZE" ] && printf "  Movies: %-8s Series: %-8s Music: %-8s Downloads: %s\n" "$MOVIES_SIZE" "${SERIES_SIZE:-0}" "${MUSIC_SIZE:-0}" "${DL_SIZE:-0}"
+[ -n "$MOVIES_SIZE" ] && printf "  Movies: ${CYAN}%-8s${RESET} Series: ${CYAN}%-8s${RESET} Music: ${CYAN}%-8s${RESET} Books: ${CYAN}%-8s${RESET} Downloads: ${CYAN}%s${RESET}\n" "$MOVIES_SIZE" "${SERIES_SIZE:--}" "${MUSIC_SIZE:--}" "${BOOKS_SIZE:--}" "${DL_SIZE:--}"
 
 # ── NETWORK THROUGHPUT ──────────────────────────────────────
 echo ""
