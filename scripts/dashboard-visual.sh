@@ -169,6 +169,12 @@ trap "rm -f $LEFT $RIGHT" EXIT
     ROOT_USAGE=$(df / 2>/dev/null | awk 'NR==2 {print $5}' | sed 's/%//')
     ROOT_INFO=$(df -h / 2>/dev/null | awk 'NR==2 {print $3 " / " $2}')
     print_disk_bar "nvme0n1p2 (/)" "$ROOT_USAGE" "$ROOT_INFO"
+    # /srv breakdown on NVMe (skip /srv/media — separate mount)
+    for d in /srv/*/; do
+        [ "$d" = "/srv/media/" ] && continue
+        size=$(du -sh "$d" 2>/dev/null | awk '{print $1}')
+        [ -n "$size" ] && printf "    ${GRAY}%-18s${RESET} ${CYAN}%s${RESET}\n" "$(basename $d)" "$size"
+    done
     EFI_USAGE=$(df /boot/efi 2>/dev/null | awk 'NR==2 {print $5}' | sed 's/%//')
     EFI_INFO=$(df -h /boot/efi 2>/dev/null | awk 'NR==2 {print $3 " / " $2}')
     [ -n "$EFI_USAGE" ] && print_disk_bar "nvme0n1p1 (EFI)" "$EFI_USAGE" "$EFI_INFO"
