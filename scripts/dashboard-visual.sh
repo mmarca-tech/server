@@ -172,6 +172,9 @@ trap "rm -f $LEFT $RIGHT" EXIT
     EFI_USAGE=$(df /boot/efi 2>/dev/null | awk 'NR==2 {print $5}' | sed 's/%//')
     EFI_INFO=$(df -h /boot/efi 2>/dev/null | awk 'NR==2 {print $3 " / " $2}')
     [ -n "$EFI_USAGE" ] && print_disk_bar "nvme0n1p1 (EFI)" "$EFI_USAGE" "$EFI_INFO"
+    MEDIA_USAGE=$(df /srv/media 2>/dev/null | awk 'NR==2 {print $5}' | sed 's/%//')
+    MEDIA_INFO=$(df -h /srv/media 2>/dev/null | awk 'NR==2 {print $3 " / " $2}')
+    [ -n "$MEDIA_USAGE" ] && print_disk_bar "sdb1 (/srv/media)" "$MEDIA_USAGE" "$MEDIA_INFO"
     echo ""
     MOVIES_SIZE=$(du -sh /srv/media/movies 2>/dev/null | awk '{print $1}')
     SERIES_SIZE=$(du -sh /srv/media/series 2>/dev/null | awk '{print $1}')
