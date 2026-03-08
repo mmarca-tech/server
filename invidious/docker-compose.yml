@@ -24,20 +24,30 @@ services:
         registration_enabled: false
         login_enabled: true
         statistics_enabled: false
-        inv_sig_helper_url: http://inv-sig-helper:12999
+        admins: ["mmarca@pm.me"]
+        hmac_key: ${INVIDIOUS_HMAC_KEY}
+        invidious_companion:
+          - private_url: "http://invidious-companion:8282"
+        invidious_companion_key: ${INVIDIOUS_COMPANION_SECRET}
     depends_on:
       invidious-db:
         condition: service_healthy
 
-  inv-sig-helper:
-    image: ${INV_SIG_HELPER_IMAGE}
+  invidious-companion:
+    image: ${INVIDIOUS_COMPANION_IMAGE}
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
+    read_only: true
+    user: 10001:10001
+    cap_drop:
+      - ALL
     networks:
       - invidious-net
+    volumes:
+      - /var/tmp/youtubei.js:/var/tmp/youtubei.js:rw
     environment:
-      RUST_LOG: info
+      SERVER_SECRET_KEY: ${INVIDIOUS_COMPANION_SECRET}
 
   invidious-db:
     image: ${INVIDIOUS_DB_IMAGE}

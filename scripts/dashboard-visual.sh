@@ -58,6 +58,9 @@ trap "rm -f $LEFT $RIGHT" EXIT
     print_service "homeassistant"           "homeassistant"
     print_service "mollysocket"             "mollysocket"
 
+    echo "${GRAY}  Automation${RESET}"
+    print_service "n8n"                     "n8n"
+
     echo "${GRAY}  Media${RESET}"
     print_service "jellyfin"                "jellyfin"
     print_service "jellyseerr"              "jellyseerr"

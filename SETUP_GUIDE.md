@@ -277,6 +277,7 @@ Edit `proxy/.env`:
 - `navidrome.example.com`
 - `audiobookshelf.example.com`
 - `invidious.example.com`
+- `n8n.example.com`
 
 OpenClaw route must not exist in Caddy.
 Mollysocket is airgapped by default in this setup. Only add a `mollysocket` route if you intentionally want public access.
@@ -394,6 +395,7 @@ Create `A` records pointing to your WAN IP:
 - `navidrome`
 - `audiobookshelf`
 - `invidious`
+- `n8n`
 - optional `mollysocket` (only if intentionally public)
 - optional `ha`
 
@@ -481,7 +483,7 @@ sudo find /srv/proxy/caddy-data /srv/proxy/caddy-config -type f -exec chmod 644 
 ./scripts/logs.sh immich
 ```
 
-### 7.3 Jellyfin / Jellyseerr / Calibre / Navidrome / Audiobookshelf / Invidious / Mollysocket
+### 7.3 Jellyfin / Jellyseerr / Calibre / Navidrome / Audiobookshelf / Invidious / n8n / Mollysocket
 
 1. Confirm each app is reachable via HTTPS subdomain.
 2. Confirm media/library paths are mounted and readable where required.

@@ -61,8 +61,14 @@ transmission.{$ROOT_DOMAIN} {
   reverse_proxy transmission:9091
 }
 
-invidious.{$ROOT_DOMAIN} {
-  import secure_headers
-  reverse_proxy invidious:3000
+invidious.{$ROOT_DOMAIN} {                                                                      
+  import secure_headers                                                                         
+  @blocked not remote_ip 192.168.1.0/24                                                         
+  respond @blocked 403                                                                          
+  reverse_proxy invidious:3000                                                                  
 }
 
+n8n.{$ROOT_DOMAIN} {
+  import secure_headers
+  reverse_proxy n8n:5678
+}

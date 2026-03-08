@@ -98,7 +98,7 @@ else
   pass "Env image variables are pinned away from latest/release/stable"
 fi
 
-non_proxy_port_pubs="$(grep -nHE '^[[:space:]]+ports:[[:space:]]*$' nextcloud/docker-compose.yml immich/docker-compose.yml ha/docker-compose.yml jellyfin/docker-compose.yml jellyseerr/docker-compose.yml calibre/docker-compose.yml navidrome/docker-compose.yml audiobookshelf/docker-compose.yml invidious/docker-compose.yml mollysocket/docker-compose.yml adguard/docker-compose.yml || true)"
+non_proxy_port_pubs="$(grep -nHE '^[[:space:]]+ports:[[:space:]]*$' nextcloud/docker-compose.yml immich/docker-compose.yml ha/docker-compose.yml jellyfin/docker-compose.yml jellyseerr/docker-compose.yml calibre/docker-compose.yml navidrome/docker-compose.yml audiobookshelf/docker-compose.yml invidious/docker-compose.yml n8n/docker-compose.yml mollysocket/docker-compose.yml adguard/docker-compose.yml || true)"
 if [[ -n "$non_proxy_port_pubs" ]]; then
   fail "Non-proxy stacks publish host ports:\n$non_proxy_port_pubs"
 else
@@ -130,6 +130,7 @@ required_srv_dirs=(
   /srv/navidrome
   /srv/audiobookshelf
   /srv/invidious
+  /srv/n8n
   /srv/mollysocket
   /srv/adguard
   /srv/homeassistant

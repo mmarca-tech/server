@@ -17,6 +17,7 @@ services=(
     "calibre"
     "audiobookshelf"
     "invidious"
+    "n8n"
     "ha"
     "adguard"
     "transmission"

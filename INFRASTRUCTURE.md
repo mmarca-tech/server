@@ -72,6 +72,7 @@ Home server running on a Debian 13 laptop with Docker Compose, Caddy reverse pro
 |---------|-----------|------|--------|-------|
 | **Home Assistant** | homeassistant | 8123 | ✅ | LAN only + reverse proxy |
 | **Nextcloud** | nextcloud | 80 | ✅ | File sync + productivity |
+| **n8n** | n8n | 5678 | ✅ | Workflow automation |
 | **MollySocket** | mollysocket | - | ✅ | Signal messaging relay |
 | **AdGuard** | adguard | 3001 (UI) | ✅ | DNS + ad-blocking |
 
@@ -178,6 +179,7 @@ DNS (53)       → AdGuard (restrict if needed)
 
 ## 📝 Recent Changes
 
+- **2026-03-08**: Added n8n workflow automation stack
 - **2026-03-08**: Added Invidious stack (privacy YouTube frontend) with inv-sig-helper and PostgreSQL
 - **2026-03-05**: Added OpenClaw automation suite (docker, caddy, ha, media monitoring)
 - **2026-03-05**: Security hardening (credentials chmod, auto-updates enabled)

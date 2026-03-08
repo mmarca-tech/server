@@ -357,6 +357,40 @@ docker compose up -d
 
 ---
 
+## ⚙️ Automation
+
+### n8n (`/srv/server/n8n`)
+**Status:** ✅ Running  
+**URL:** https://n8n.example.com  
+**Port:** 5678 (internal, via Caddy)  
+**Docker Compose:** `n8n/docker-compose.yml`
+
+- Visual workflow automation (Zapier/Make alternative)
+- 400+ integrations: webhooks, APIs, databases, messaging
+- Self-hosted, no usage limits
+- Workflows and credentials stored in SQLite under `/srv/n8n/data`
+
+**Config:** `.env` (host, encryption key, timezone)  
+**Data:** `/srv/n8n/data` (SQLite + workflows + credentials)
+
+**First run:**
+```bash
+mkdir -p /srv/n8n/data
+cd /srv/server/n8n
+cp .env.example .env
+# Edit .env: set N8N_HOST and generate N8N_ENCRYPTION_KEY
+# openssl rand -hex 32
+docker compose up -d
+```
+
+**Common Issues:**
+- Workflows not saving → Check `/srv/n8n/data` permissions (needs write access by UID 1000)
+- Webhooks not firing → Verify `WEBHOOK_URL` matches your public domain
+- Can't reach the UI → Check Caddy is routing to `n8n:5678`
+- Encryption key changed → All saved credentials will break; keep the key stable
+
+---
+
 ## 💼 Productivity & Files
 
 ### Nextcloud (`/srv/server/nextcloud`)
