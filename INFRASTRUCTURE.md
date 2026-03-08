@@ -28,7 +28,7 @@ Home server running on a Debian 13 laptop with Docker Compose, Caddy reverse pro
          │   └─ Secure headers + compression
          │
          ├─→ Docker Containers
-         │   ├─ Media (Jellyfin, Immich, Navidrome)
+         │   ├─ Media (Jellyfin, Immich, Navidrome, Invidious)
          │   ├─ Downloads (Transmission + gluetun VPN)
          │   ├─ Smart Home (Home Assistant)
          │   ├─ Utilities (Nextcloud, Calibre)
@@ -55,6 +55,7 @@ Home server running on a Debian 13 laptop with Docker Compose, Caddy reverse pro
 | **Jellyseerr** | jellyseerr | 5055 | ✅ | Request/wishlist management |
 | **Audiobookshelf** | audiobookshelf | 80 | ✅ | Audiobook library |
 | **Calibre** | calibre-web | 8083 | ✅ | E-book management |
+| **Invidious** | invidious | 3000 | ✅ | Privacy YouTube frontend |
 | **Transmission** | transmission | 9091 | ✅ | Torrent client (via gluetun VPN) |
 | **Gluetun** | gluetun | - | ✅ | ProtonVPN WireGuard sidecar for Transmission |
 | **Sonarr** | sonarr | 8989 | ✅ | TV show automation (download + organize) |
@@ -177,6 +178,7 @@ DNS (53)       → AdGuard (restrict if needed)
 
 ## 📝 Recent Changes
 
+- **2026-03-08**: Added Invidious stack (privacy YouTube frontend) with inv-sig-helper and PostgreSQL
 - **2026-03-05**: Added OpenClaw automation suite (docker, caddy, ha, media monitoring)
 - **2026-03-05**: Security hardening (credentials chmod, auto-updates enabled)
 - **2026-03-05**: Fixed UFW SSH access issues
