@@ -376,6 +376,7 @@ docker compose up -d
 **First run:**
 ```bash
 mkdir -p /srv/n8n/data
+chown -R 1000:1000 /srv/n8n/data   # n8n runs as UID 1000 (node)
 cd /srv/server/n8n
 cp .env.example .env
 # Edit .env: set N8N_HOST and generate N8N_ENCRYPTION_KEY
