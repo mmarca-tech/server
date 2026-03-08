@@ -1,0 +1,16 @@
+[90m2026-03-08T09:22:03.744Z[39m [35m[canvas][39m [36mhost mounted at http://127.0.0.1:18789/__openclaw__/canvas/ (root /home/manu/.openclaw/canvas)[39m
+2026-03-08T11:22:03.760+02:00 Gateway failed to start: another gateway instance is already listening on ws://127.0.0.1:18789
+If the gateway is supervised, stop it with: openclaw gateway stop
+2026-03-08T11:22:03.859+02:00 Port 18789 is already in use.
+2026-03-08T11:22:03.861+02:00 - Port is in use but process details are unavailable (install lsof or run as an admin user).
+2026-03-08T11:22:03.894+02:00 Gateway service status unknown; if supervised, stop it first.
+2026-03-08T11:22:03.897+02:00 Tip: openclaw gateway stop
+2026-03-08T11:22:03.900+02:00 Or: systemctl --user stop openclaw-gateway.service
+[90m2026-03-08T09:22:16.815Z[39m [35m[canvas][39m [36mhost mounted at http://127.0.0.1:18789/__openclaw__/canvas/ (root /home/manu/.openclaw/canvas)[39m
+2026-03-08T11:22:16.825+02:00 Gateway failed to start: another gateway instance is already listening on ws://127.0.0.1:18789
+If the gateway is supervised, stop it with: openclaw gateway stop
+2026-03-08T11:22:16.978+02:00 Port 18789 is already in use.
+2026-03-08T11:22:16.981+02:00 - Port is in use but process details are unavailable (install lsof or run as an admin user).
+2026-03-08T11:22:17.030+02:00 Gateway service status unknown; if supervised, stop it first.
+2026-03-08T11:22:17.034+02:00 Tip: openclaw gateway stop
+2026-03-08T11:22:17.037+02:00 Or: systemctl --user stop openclaw-gateway.service

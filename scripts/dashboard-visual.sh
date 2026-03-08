@@ -156,42 +156,33 @@ trap "rm -f $LEFT $RIGHT" EXIT
     echo "${BLUE}${BOLD}DISK USAGE${RESET}"
     echo "─────────────────────────────────────────"
     print_disk_bar() {
-        local label="$1" usage="$2" info="$3"
-        printf "  %-16s" "$label"
-        if [ "$usage" -lt 80 ]; then printf "${GREEN}"
-        elif [ "$usage" -lt 90 ]; then printf "${YELLOW}"
-        else printf "${RED}"; fi
-        for ((i=0; i<$((usage/5)); i++)); do printf "█"; done
-        printf "${GRAY}"
-        for ((i=0; i<$((20-usage/5)); i++)); do printf "░"; done
-        printf "${RESET} %3d%%  ${GRAY}%s${RESET}\n" "$usage" "$info"
+        local label="$1" used="$2" total="$3" pct="$4"
+        local color="$GREEN"
+        [ "$pct" -ge 80 ] && color="$YELLOW"
+        [ "$pct" -ge 90 ] && color="$RED"
+        local filled=$(( pct / 5 )) empty=$(( 20 - filled ))
+        local bar=""
+        for ((i=0; i<filled; i++)); do bar+="█"; done
+        for ((i=0; i<empty; i++)); do bar+="░"; done
+        printf "  %-18s ${color}%s${RESET}  %s / %s  ${color}%d%%${RESET}\n" \
+            "$label" "$bar" "$used" "$total" "$pct"
     }
-    ROOT_USAGE=$(df / 2>/dev/null | awk 'NR==2 {print $5}' | sed 's/%//')
-    ROOT_INFO=$(df -h / 2>/dev/null | awk 'NR==2 {print $3 " / " $2}')
-    print_disk_bar "nvme0n1p2 (/)" "$ROOT_USAGE" "$ROOT_INFO"
-    # /srv breakdown on NVMe (skip /srv/media — separate mount)
-    for d in /srv/*/; do
-        [ "$d" = "/srv/media/" ] && continue
-        size=$(du -sh "$d" 2>/dev/null | awk '{print $1}')
-        [ -n "$size" ] && printf "    ${GRAY}%-18s${RESET} ${CYAN}%s${RESET}\n" "$(basename $d)" "$size"
-    done
-    EFI_USAGE=$(df /boot/efi 2>/dev/null | awk 'NR==2 {print $5}' | sed 's/%//')
-    EFI_INFO=$(df -h /boot/efi 2>/dev/null | awk 'NR==2 {print $3 " / " $2}')
-    [ -n "$EFI_USAGE" ] && print_disk_bar "nvme0n1p1 (EFI)" "$EFI_USAGE" "$EFI_INFO"
-    MEDIA_USAGE=$(df /srv/media 2>/dev/null | awk 'NR==2 {print $5}' | sed 's/%//')
-    MEDIA_INFO=$(df -h /srv/media 2>/dev/null | awk 'NR==2 {print $3 " / " $2}')
-    [ -n "$MEDIA_USAGE" ] && print_disk_bar "sdb1 (/srv/media)" "$MEDIA_USAGE" "$MEDIA_INFO"
-    echo ""
-    MOVIES_SIZE=$(du -sh /srv/media/movies 2>/dev/null | awk '{print $1}')
-    SERIES_SIZE=$(du -sh /srv/media/series 2>/dev/null | awk '{print $1}')
-    MUSIC_SIZE=$(du -sh /srv/media/music 2>/dev/null | awk '{print $1}')
-    BOOKS_SIZE=$(du -sh /srv/media/books 2>/dev/null | awk '{print $1}')
-    DL_SIZE=$(du -sh /srv/media/downloads 2>/dev/null | awk '{print $1}')
-    [ -n "$MOVIES_SIZE" ] && {
-        printf "  Movies: ${CYAN}%-7s${RESET}  Series: ${CYAN}%-7s${RESET}\n" "$MOVIES_SIZE" "${SERIES_SIZE:--}"
-        printf "  Music:  ${CYAN}%-7s${RESET}  Books:  ${CYAN}%-7s${RESET}\n" "${MUSIC_SIZE:--}" "${BOOKS_SIZE:--}"
-        printf "  Downloads: ${CYAN}%s${RESET}\n" "${DL_SIZE:--}"
-    }
+    # Show only real block devices (exclude tmpfs, overlay, squashfs, etc.)
+    while IFS= read -r line; do
+        dev=$(echo "$line" | awk '{print $1}')
+        mount=$(echo "$line" | awk '{print $6}')
+        used=$(echo "$line" | awk '{print $3}')
+        total=$(echo "$line" | awk '{print $2}')
+        pct=$(echo "$line" | awk '{print $5}' | sed 's/%//')
+        # Derive a friendly label
+        case "$mount" in
+            /)           label="NVMe (/)" ;;
+            /boot/efi)   label="EFI (/boot/efi)" ;;
+            /srv/media)  label="HDD (/srv/media)" ;;
+            *)           label="$(basename "$dev") ($mount)" ;;
+        esac
+        print_disk_bar "$label" "$used" "$total" "$pct"
+    done < <(df -h -t ext4 -t btrfs -t xfs -t vfat -t ntfs -t exfat 2>/dev/null | awk 'NR>1')
     echo ""
 
     # Network

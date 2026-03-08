@@ -31,6 +31,7 @@ This repository contains Docker Compose stacks for:
 - Immich (PostgreSQL + Redis + ML)
 - Home Assistant (host networking for LAN discovery)
 - Jellyfin
+- Invidious (privacy YouTube frontend)
 - Jellyseerr
 - Calibre-Web
 - Navidrome
@@ -97,6 +98,7 @@ Create DNS A records to your WAN IP:
 - `calibre`
 - `navidrome`
 - `audiobookshelf`
+- `invidious`
 - optional `ha`
 - optional `mollysocket` (only if you intentionally expose it)
 
@@ -343,6 +345,7 @@ make down
 - `immich/` Immich + PostgreSQL + Redis + ML
 - `ha/` Home Assistant
 - `jellyfin/` Jellyfin media server
+- `invidious/` Invidious privacy YouTube frontend
 - `jellyseerr/` Jellyseerr request manager
 - `calibre/` Calibre-Web
 - `navidrome/` Navidrome music server

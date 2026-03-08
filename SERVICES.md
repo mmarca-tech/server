@@ -76,6 +76,43 @@ All services running on the home server. Each has its own configuration director
 
 ---
 
+### Invidious (`/srv/server/invidious`)
+**Status:** ✅ Running  
+**URL:** https://invidious.example.com  
+**Port:** 3000 (internal, via Caddy)  
+**Docker Compose:** `invidious/docker-compose.yml`
+
+- Privacy-first YouTube frontend
+- No tracking, no ads, no account required for browsing
+- Optional user accounts for subscriptions and watch history
+- `inv_sig_helper` sidecar handles YouTube signature validation
+
+**Services:**
+- `invidious` — main web app (port 3000)
+- `inv-sig-helper` — YouTube signature helper (port 12999, internal only)
+- `invidious-db` — PostgreSQL database
+
+**Config:** `INVIDIOUS_CONFIG` env var in `docker-compose.yml`  
+**Data:** `/srv/invidious/db` (PostgreSQL)
+
+**First run:**
+```bash
+mkdir -p /srv/invidious/db
+cd /srv/server/invidious
+cp .env.example .env
+# Edit .env: set INVIDIOUS_DOMAIN and generate INVIDIOUS_DB_PASSWORD
+# openssl rand -hex 32
+docker compose up -d
+```
+
+**Common Issues:**
+- Videos not playing → Check `inv-sig-helper` is healthy: `docker logs inv-sig-helper`
+- Can't reach the site → Verify Caddy reverse_proxy target is `invidious:3000`
+- Registration errors → `registration_enabled` is set to `false` by default; enable in compose env if needed
+- DB won't start → Check `/srv/invidious/db` ownership: `chown -R 999:999 /srv/invidious/db`
+
+---
+
 ### Calibre (`/srv/server/calibre`)
 **Status:** ✅ Running  
 **URL:** https://calibre.example.com  
