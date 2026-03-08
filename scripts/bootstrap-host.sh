@@ -34,6 +34,8 @@ directories=(
   "$SRV_ROOT/audiobookshelf"
   "$SRV_ROOT/audiobookshelf/config"
   "$SRV_ROOT/audiobookshelf/metadata"
+  "$SRV_ROOT/invidious"
+  "$SRV_ROOT/invidious/db"
   "$SRV_ROOT/mollysocket"
   "$SRV_ROOT/mollysocket/data"
   "$SRV_ROOT/adguard"

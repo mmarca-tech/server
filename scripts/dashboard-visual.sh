@@ -63,6 +63,7 @@ trap "rm -f $LEFT $RIGHT" EXIT
     print_service "jellyseerr"              "jellyseerr"
     print_service "navidrome"               "navidrome"
     print_service "audiobookshelf"          "audiobookshelf"
+    print_service "invidious"               "invidious"
     print_service "calibre-web"             "calibre-web"
 
     echo "${GRAY}  Arr Stack${RESET}"

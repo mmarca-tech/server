@@ -11,7 +11,7 @@ project_name_for_stack() {
 
 if [[ $# -lt 1 ]]; then
   echo "Usage: $0 <stack> [service]"
-  echo "Stacks: proxy nextcloud immich ha jellyfin jellyseerr calibre navidrome audiobookshelf mollysocket adguard transmission sonarr radarr prowlarr flaresolverr bazarr tdarr recyclarr"
+  echo "Stacks: proxy nextcloud immich ha jellyfin jellyseerr calibre navidrome audiobookshelf invidious mollysocket adguard transmission sonarr radarr prowlarr flaresolverr bazarr tdarr recyclarr"
   exit 1
 fi
 

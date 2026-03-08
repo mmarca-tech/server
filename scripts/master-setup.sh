@@ -194,7 +194,7 @@ manual_checkpoint \
 
 manual_checkpoint \
   "DNS records required" \
-  "Create A records to your WAN IP for: @, nc, immich, jellyfin, jellyseerr, calibre, navidrome, audiobookshelf, mollysocket (and optional ha)." \
+  "Create A records to your WAN IP for: @, nc, immich, jellyfin, jellyseerr, calibre, navidrome, audiobookshelf, invidious, mollysocket (and optional ha)." \
   "Do NOT create any public DNS record for AdGuard; keep it LAN-only and point router/client DNS to ${LAN_IP} instead." \
   "Do NOT create any DNS record for OpenClaw."
 
@@ -243,3 +243,4 @@ echo " - https://immich.${ROOT_DOMAIN}"
 echo " - https://jellyfin.${ROOT_DOMAIN}"
 echo " - https://navidrome.${ROOT_DOMAIN}"
 echo " - https://audiobookshelf.${ROOT_DOMAIN}"
+echo " - https://invidious.${ROOT_DOMAIN}"
