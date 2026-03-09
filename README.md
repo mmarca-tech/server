@@ -101,6 +101,7 @@ Create DNS A records to your WAN IP:
 - `audiobookshelf`
 - `invidious`
 - `n8n`
+- `auth`
 - optional `ha`
 - optional `mollysocket` (only if you intentionally expose it)
 
@@ -363,6 +364,7 @@ make down
 - `recyclarr/` Recyclarr TRaSH Guides quality profile sync
 - `mollysocket/` Mollysocket
 - `adguard/` AdGuard Home (LAN-only DNS filtering)
+- `authelia/` Authelia OIDC/SSO provider (auth.ivantili.site)
 - `openclaw/` OpenClaw host config (`/etc/openclaw/openclaw.env`) + systemd unit template
 - `scripts/` operational helpers
 - `Makefile` shorthand wrappers around scripts

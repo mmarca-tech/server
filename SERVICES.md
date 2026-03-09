@@ -491,6 +491,35 @@ networks:
 
 ---
 
+## 🔐 Identity & Authentication
+
+### Authelia (`/srv/server/authelia`)
+**Status:** ✅ Running  
+**URL:** https://auth.ivantili.site  
+**Port:** 9091 (internal, via Caddy reverse proxy)  
+**Docker Compose:** `authelia/docker-compose.yml`  
+**Added:** 2026-03-09
+
+- Self-hosted OIDC/SSO provider
+- Flat-file user store (`config/users_database.yml`)
+- SQLite storage (`config/db.sqlite3`)
+- Two-factor authentication (TOTP)
+- Used as identity provider for Tailscale (custom OIDC)
+- Private key: `config/oidc.key` (RSA 4096)
+
+**Tailscale OIDC config:**
+- Issuer: `https://auth.ivantili.site`
+- Client ID: `tailscale`
+- Client secret: plaintext saved separately (hashed in config)
+
+**Common Issues:**
+- Container won't start → Check `docker logs authelia` for config errors
+- Login loop → Clear browser cookies for `auth.ivantili.site`
+- TOTP lost → Remove TOTP from DB: `docker exec authelia authelia storage user totp delete --username manu`
+- Tailscale auth failing → Verify OIDC discovery: `curl https://auth.ivantili.site/.well-known/openid-configuration`
+
+---
+
 ## 📊 Maintenance
 
 - **Daily:** Check error logs (automated)

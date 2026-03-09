@@ -72,3 +72,8 @@ n8n.{$ROOT_DOMAIN} {
   import secure_headers
   reverse_proxy n8n:5678
 }
+
+auth.{$ROOT_DOMAIN} {
+  import secure_headers
+  reverse_proxy authelia:9091
+}

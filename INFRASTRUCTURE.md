@@ -33,6 +33,7 @@ Home server running on a Debian 13 laptop with Docker Compose, Caddy reverse pro
          │   ├─ Smart Home (Home Assistant)
          │   ├─ Utilities (Nextcloud, Calibre)
          │   ├─ Ad-blocking (AdGuard)
+         │   ├─ Identity/SSO (Authelia — OIDC provider)
          │   └─ Databases (MariaDB, Redis, PostgreSQL)
          │
          └─→ OpenClaw
