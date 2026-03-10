@@ -31,6 +31,8 @@ This repository contains Docker Compose stacks for:
 - Immich (PostgreSQL + Redis + ML)
 - Home Assistant (host networking for LAN discovery)
 - Jellyfin
+- Invidious (privacy YouTube frontend)
+- n8n (workflow automation)
 - Jellyseerr
 - Calibre-Web
 - Navidrome
@@ -97,6 +99,9 @@ Create DNS A records to your WAN IP:
 - `calibre`
 - `navidrome`
 - `audiobookshelf`
+- `invidious`
+- `n8n`
+- `auth`
 - optional `ha`
 - optional `mollysocket` (only if you intentionally expose it)
 
@@ -343,6 +348,8 @@ make down
 - `immich/` Immich + PostgreSQL + Redis + ML
 - `ha/` Home Assistant
 - `jellyfin/` Jellyfin media server
+- `invidious/` Invidious privacy YouTube frontend
+- `n8n/` n8n workflow automation
 - `jellyseerr/` Jellyseerr request manager
 - `calibre/` Calibre-Web
 - `navidrome/` Navidrome music server
@@ -357,6 +364,7 @@ make down
 - `recyclarr/` Recyclarr TRaSH Guides quality profile sync
 - `mollysocket/` Mollysocket
 - `adguard/` AdGuard Home (LAN-only DNS filtering)
+- `authelia/` Authelia OIDC/SSO provider (auth.ivantili.site)
 - `openclaw/` OpenClaw host config (`/etc/openclaw/openclaw.env`) + systemd unit template
 - `scripts/` operational helpers
 - `Makefile` shorthand wrappers around scripts

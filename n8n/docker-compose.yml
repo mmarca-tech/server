@@ -1,0 +1,23 @@
+services:
+  n8n:
+    image: ${N8N_IMAGE}
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    env_file:
+      - .env
+    environment:
+      N8N_HOST: ${N8N_HOST}
+      N8N_PORT: ${N8N_PORT:-5678}
+      N8N_PROTOCOL: https
+      WEBHOOK_URL: https://${N8N_HOST}/
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      TZ: ${TZ:-Europe/Tallinn}
+    volumes:
+      - /srv/n8n/data:/home/node/.n8n
+
+networks:
+  proxy:
+    external: true

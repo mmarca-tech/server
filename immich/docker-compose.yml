@@ -51,7 +51,7 @@ services:
       REDIS_HOSTNAME: immich-redis
       IMMICH_MACHINE_LEARNING_URL: http://immich-machine-learning:3003
     volumes:
-      - /srv/immich/library:/usr/src/app/upload
+      - /srv/media/immich/library:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
     networks:
       - proxy

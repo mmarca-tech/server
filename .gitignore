@@ -10,3 +10,5 @@ transmission/config/settings.json
 transmission/config/resume/
 transmission/config/torrents/
 transmission/config/.*.swp
+authelia/config/db.sqlite3
+authelia/config/notification.txt

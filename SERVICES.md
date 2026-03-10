@@ -76,6 +76,43 @@ All services running on the home server. Each has its own configuration director
 
 ---
 
+### Invidious (`/srv/server/invidious`)
+**Status:** ✅ Running  
+**URL:** https://invidious.example.com  
+**Port:** 3000 (internal, via Caddy)  
+**Docker Compose:** `invidious/docker-compose.yml`
+
+- Privacy-first YouTube frontend
+- No tracking, no ads, no account required for browsing
+- Optional user accounts for subscriptions and watch history
+- `inv_sig_helper` sidecar handles YouTube signature validation
+
+**Services:**
+- `invidious` — main web app (port 3000)
+- `inv-sig-helper` — YouTube signature helper (port 12999, internal only)
+- `invidious-db` — PostgreSQL database
+
+**Config:** `INVIDIOUS_CONFIG` env var in `docker-compose.yml`  
+**Data:** `/srv/invidious/db` (PostgreSQL)
+
+**First run:**
+```bash
+mkdir -p /srv/invidious/db
+cd /srv/server/invidious
+cp .env.example .env
+# Edit .env: set INVIDIOUS_DOMAIN and generate INVIDIOUS_DB_PASSWORD
+# openssl rand -hex 32
+docker compose up -d
+```
+
+**Common Issues:**
+- Videos not playing → Check `inv-sig-helper` is healthy: `docker logs inv-sig-helper`
+- Can't reach the site → Verify Caddy reverse_proxy target is `invidious:3000`
+- Registration errors → `registration_enabled` is set to `false` by default; enable in compose env if needed
+- DB won't start → Check `/srv/invidious/db` ownership: `chown -R 999:999 /srv/invidious/db`
+
+---
+
 ### Calibre (`/srv/server/calibre`)
 **Status:** ✅ Running  
 **URL:** https://calibre.example.com  
@@ -320,6 +357,41 @@ All services running on the home server. Each has its own configuration director
 
 ---
 
+## ⚙️ Automation
+
+### n8n (`/srv/server/n8n`)
+**Status:** ✅ Running  
+**URL:** https://n8n.example.com  
+**Port:** 5678 (internal, via Caddy)  
+**Docker Compose:** `n8n/docker-compose.yml`
+
+- Visual workflow automation (Zapier/Make alternative)
+- 400+ integrations: webhooks, APIs, databases, messaging
+- Self-hosted, no usage limits
+- Workflows and credentials stored in SQLite under `/srv/n8n/data`
+
+**Config:** `.env` (host, encryption key, timezone)  
+**Data:** `/srv/n8n/data` (SQLite + workflows + credentials)
+
+**First run:**
+```bash
+mkdir -p /srv/n8n/data
+chown -R 1000:1000 /srv/n8n/data   # n8n runs as UID 1000 (node)
+cd /srv/server/n8n
+cp .env.example .env
+# Edit .env: set N8N_HOST and generate N8N_ENCRYPTION_KEY
+# openssl rand -hex 32
+docker compose up -d
+```
+
+**Common Issues:**
+- Workflows not saving → Check `/srv/n8n/data` permissions (needs write access by UID 1000)
+- Webhooks not firing → Verify `WEBHOOK_URL` matches your public domain
+- Can't reach the UI → Check Caddy is routing to `n8n:5678`
+- Encryption key changed → All saved credentials will break; keep the key stable
+
+---
+
 ## 💼 Productivity & Files
 
 ### Nextcloud (`/srv/server/nextcloud`)
@@ -416,6 +488,35 @@ networks:
   default:
     name: home-network
 ```
+
+---
+
+## 🔐 Identity & Authentication
+
+### Authelia (`/srv/server/authelia`)
+**Status:** ✅ Running  
+**URL:** https://auth.ivantili.site  
+**Port:** 9091 (internal, via Caddy reverse proxy)  
+**Docker Compose:** `authelia/docker-compose.yml`  
+**Added:** 2026-03-09
+
+- Self-hosted OIDC/SSO provider
+- Flat-file user store (`config/users_database.yml`)
+- SQLite storage (`config/db.sqlite3`)
+- Two-factor authentication (TOTP)
+- Used as identity provider for Tailscale (custom OIDC)
+- Private key: `config/oidc.key` (RSA 4096)
+
+**Tailscale OIDC config:**
+- Issuer: `https://auth.ivantili.site`
+- Client ID: `tailscale`
+- Client secret: plaintext saved separately (hashed in config)
+
+**Common Issues:**
+- Container won't start → Check `docker logs authelia` for config errors
+- Login loop → Clear browser cookies for `auth.ivantili.site`
+- TOTP lost → Remove TOTP from DB: `docker exec authelia authelia storage user totp delete --username manu`
+- Tailscale auth failing → Verify OIDC discovery: `curl https://auth.ivantili.site/.well-known/openid-configuration`
 
 ---
 
