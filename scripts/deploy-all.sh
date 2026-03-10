@@ -58,16 +58,18 @@ echo "✅ Directory structure created"
 echo ""
 echo -e "${YELLOW}🌐 Step 4: Setting Environment Variables${NC}"
 
-# Create .env files for each service
+# Copy all .env.example -> .env for services that don't have one yet
+for example in "$SERVER_DIR"/*/.env.example; do
+    dir="$(dirname "$example")"
+    [ ! -f "$dir/.env" ] && cp "$example" "$dir/.env"
+done
+
+# Overwrite proxy .env with values from this run
 cat > "$SERVER_DIR/proxy/.env" << EOF
 ROOT_DOMAIN=$DOMAIN
 ACME_EMAIL=$ACME_EMAIL
 CADDY_IMAGE=caddy:2.8.4
 EOF
-
-# Initialize nextcloud and immich .env from examples if not already present
-[ ! -f "$SERVER_DIR/nextcloud/.env" ] && cp "$SERVER_DIR/nextcloud/.env.example" "$SERVER_DIR/nextcloud/.env"
-[ ! -f "$SERVER_DIR/immich/.env" ] && cp "$SERVER_DIR/immich/.env.example" "$SERVER_DIR/immich/.env"
 
 echo "✅ Environment files created"
 echo ""
