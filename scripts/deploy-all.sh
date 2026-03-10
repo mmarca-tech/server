@@ -45,15 +45,27 @@ echo -e "${YELLOW}🐳 Step 2: Installing Docker${NC}"
 bash "$SCRIPT_DIR/install-docker.sh"
 
 echo ""
-echo -e "${YELLOW}💾 Step 2b: Configuring Docker data directory to /srv/docker${NC}"
+echo -e "${YELLOW}💾 Step 2b: Moving Docker & containerd data to /srv${NC}"
+
+systemctl stop docker containerd
+
+# Move Docker data-root
 mkdir -p /srv/docker
 cat > /etc/docker/daemon.json << 'EOF'
 {
   "data-root": "/srv/docker"
 }
 EOF
-systemctl restart docker
-echo "✅ Docker data root set to /srv/docker"
+
+# Symlink containerd to /srv
+if [ ! -L /var/lib/containerd ]; then
+    rm -rf /var/lib/containerd
+    mkdir -p /srv/containerd
+    ln -s /srv/containerd /var/lib/containerd
+fi
+
+systemctl start containerd docker
+echo "✅ Docker root: /srv/docker | containerd: /srv/containerd"
 
 echo ""
 echo -e "${YELLOW}📁 Step 3: Creating Directory Structure${NC}"
