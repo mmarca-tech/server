@@ -45,6 +45,17 @@ echo -e "${YELLOW}🐳 Step 2: Installing Docker${NC}"
 bash "$SCRIPT_DIR/install-docker.sh"
 
 echo ""
+echo -e "${YELLOW}💾 Step 2b: Configuring Docker data directory to /srv/docker${NC}"
+mkdir -p /srv/docker
+cat > /etc/docker/daemon.json << 'EOF'
+{
+  "data-root": "/srv/docker"
+}
+EOF
+systemctl restart docker
+echo "✅ Docker data root set to /srv/docker"
+
+echo ""
 echo -e "${YELLOW}📁 Step 3: Creating Directory Structure${NC}"
 mkdir -p /srv/media/{downloads,downloads/incomplete,movies,series,music,audiobooks,podcasts}
 mkdir -p /srv/{sonarr,radarr,prowlarr,bazarr}/config
