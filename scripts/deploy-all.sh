@@ -57,11 +57,14 @@ cat > /etc/docker/daemon.json << 'EOF'
 }
 EOF
 
-# Symlink containerd to /srv
+# Move containerd root to /srv via config
+mkdir -p /srv/containerd
+mkdir -p /etc/containerd
+containerd config default > /etc/containerd/config.toml
+sed -i 's|^root = .*|root = "/srv/containerd"|' /etc/containerd/config.toml
+# Remove stale /var/lib/containerd if it's not already a symlink
 if [ ! -L /var/lib/containerd ]; then
     rm -rf /var/lib/containerd
-    mkdir -p /srv/containerd
-    ln -s /srv/containerd /var/lib/containerd
 fi
 
 systemctl start containerd docker
