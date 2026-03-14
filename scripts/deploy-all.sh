@@ -5,6 +5,9 @@
 
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SERVER_DIR="$(dirname "$SCRIPT_DIR")"
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -39,7 +42,33 @@ apt install -y curl wget git nano htop tmux
 
 echo ""
 echo -e "${YELLOW}🐳 Step 2: Installing Docker${NC}"
-bash /srv/server/scripts/install-docker.sh
+bash "$SCRIPT_DIR/install-docker.sh"
+
+echo ""
+echo -e "${YELLOW}💾 Step 2b: Moving Docker & containerd data to /srv${NC}"
+
+systemctl stop docker containerd
+
+# Move Docker data-root
+mkdir -p /srv/docker
+cat > /etc/docker/daemon.json << 'EOF'
+{
+  "data-root": "/srv/docker"
+}
+EOF
+
+# Move containerd root to /srv via config
+mkdir -p /srv/containerd
+mkdir -p /etc/containerd
+containerd config default > /etc/containerd/config.toml
+sed -i 's|^root = .*|root = "/srv/containerd"|' /etc/containerd/config.toml
+# Remove stale /var/lib/containerd if it's not already a symlink
+if [ ! -L /var/lib/containerd ]; then
+    rm -rf /var/lib/containerd
+fi
+
+systemctl start containerd docker
+echo "✅ Docker root: /srv/docker | containerd: /srv/containerd"
 
 echo ""
 echo -e "${YELLOW}📁 Step 3: Creating Directory Structure${NC}"
@@ -55,15 +84,17 @@ echo "✅ Directory structure created"
 echo ""
 echo -e "${YELLOW}🌐 Step 4: Setting Environment Variables${NC}"
 
-# Create .env files for each service
-cat > /srv/server/proxy/.env << EOF
+# Copy all .env.example -> .env for services that don't have one yet
+for example in "$SERVER_DIR"/*/.env.example; do
+    dir="$(dirname "$example")"
+    [ ! -f "$dir/.env" ] && cp "$example" "$dir/.env"
+done
+
+# Overwrite proxy .env with values from this run
+cat > "$SERVER_DIR/proxy/.env" << EOF
 ROOT_DOMAIN=$DOMAIN
 ACME_EMAIL=$ACME_EMAIL
-EOF
-
-cat > /srv/server/transmission/.env << EOF
-TZ=Europe/Tallinn
-DISABLE_VPN=true
+CADDY_IMAGE=caddy:2.8.4
 EOF
 
 echo "✅ Environment files created"
@@ -71,19 +102,19 @@ echo ""
 echo -e "${YELLOW}📝 Step 5: Manual Configuration Required${NC}"
 echo "Please edit these files with your actual values:"
 echo ""
-echo "  nano /srv/server/proxy/.env"
-echo "  nano /srv/server/nextcloud/.env"
-echo "  nano /srv/server/immich/.env"
+echo "  nano $SERVER_DIR/nextcloud/.env"
+echo "  nano $SERVER_DIR/immich/.env"
 echo ""
 read -p "Press ENTER when you've configured all .env files: "
 
 echo ""
-echo -e "${YELLOW}🐳 Step 6: Creating Docker Network${NC}"
-docker network create home-network 2>/dev/null || echo "Network already exists"
+echo -e "${YELLOW}🐳 Step 6: Creating Docker Networks${NC}"
+docker network create home-network 2>/dev/null || echo "home-network already exists"
+docker network create proxy 2>/dev/null || echo "proxy network already exists"
 
 echo ""
 echo -e "${YELLOW}🚀 Step 7: Starting Services${NC}"
-bash /srv/server/scripts/start-all-services.sh
+bash "$SCRIPT_DIR/start-all-services.sh"
 
 echo ""
 echo -e "${YELLOW}⏱️  Waiting for services to initialize...${NC}"
@@ -91,11 +122,11 @@ sleep 30
 
 echo ""
 echo -e "${YELLOW}🔐 Step 8: Installing OpenClaw${NC}"
-bash /srv/server/scripts/install-openclaw.sh
+bash "$SCRIPT_DIR/install-openclaw.sh"
 
 echo ""
 echo -e "${YELLOW}📊 Step 9: Setting Up Monitoring${NC}"
-bash /srv/server/scripts/setup-monitoring.sh
+bash "$SCRIPT_DIR/setup-monitoring.sh"
 
 echo ""
 echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
@@ -108,7 +139,7 @@ echo "1. Verify services:"
 echo "   docker ps -a"
 echo ""
 echo "2. Check dashboard:"
-echo "   /srv/server/scripts/dashboard-visual.sh"
+echo "   $SCRIPT_DIR/dashboard-visual.sh"
 echo ""
 echo "3. Configure DNS and port forwarding:"
 echo "   - Point $DOMAIN to your public IP"
@@ -124,7 +155,7 @@ echo "   - Prowlarr (LAN): http://SERVER_IP:9696"
 echo "   - Jellyseerr: https://jellyseerr.$DOMAIN / http://SERVER_IP:5055"
 echo ""
 echo "5. Review documentation:"
-echo "   - /srv/server/DEPLOYMENT.md"
-echo "   - /srv/server/INFRASTRUCTURE.md"
-echo "   - /srv/server/SERVICES.md"
+echo "   - $SERVER_DIR/DEPLOYMENT.md"
+echo "   - $SERVER_DIR/INFRASTRUCTURE.md"
+echo "   - $SERVER_DIR/SERVICES.md"
 echo ""
