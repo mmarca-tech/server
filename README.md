@@ -236,6 +236,26 @@ Equivalent Make target:
 OPENAI_API_KEY='sk-...' make clawdbot-openai
 ```
 
+Use Mistral AI for OpenClaw/ClawdBot (via OpenAI-compatible API):
+
+```bash
+MISTRAL_API_KEY='...' ./scripts/connect-clawdbot-mistral.sh
+```
+
+Default Mistral model is `openai/mistral-medium-latest`, with base URL `https://api.mistral.ai/v1`.
+
+Optional overrides:
+
+```bash
+MISTRAL_API_KEY='...' MODEL='openai/mistral-small-latest' TELEGRAM_DM_POLICY='pairing' ./scripts/connect-clawdbot-mistral.sh
+```
+
+Equivalent Make target:
+
+```bash
+MISTRAL_API_KEY='...' make clawdbot-mistral
+```
+
 Use Anthropic Claude for OpenClaw/ClawdBot:
 
 ```bash
