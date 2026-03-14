@@ -40,12 +40,7 @@ calibre.{$ROOT_DOMAIN} {
   reverse_proxy calibre-web:8083
 }
 
-navidrome.{$ROOT_DOMAIN} {
-  import secure_headers
-  reverse_proxy navidrome:4533
-}
-
-audiobookshelf.{$ROOT_DOMAIN} {
+audiobookshelf.{ROOT_DOMAIN} {
   import secure_headers
   reverse_proxy audiobookshelf:80
 }
@@ -56,10 +51,6 @@ ha.{$ROOT_DOMAIN} {
   reverse_proxy host.docker.internal:8123
 }
 
-transmission.{$ROOT_DOMAIN} {
-  import secure_headers
-  reverse_proxy transmission:9091
-}
 
 invidious.{$ROOT_DOMAIN} {                                                                      
   import secure_headers                                                                         
@@ -76,4 +67,14 @@ n8n.{$ROOT_DOMAIN} {
 auth.{$ROOT_DOMAIN} {
   import secure_headers
   reverse_proxy authelia:9091
+}
+
+
+{$ROOT_DOMAIN} {
+  import secure_headers
+  handle /.well-known/webfinger {
+    header Content-Type "application/jrd+json"
+    respond `{"subject":"acct:manuel@ivantili.site","links":[{"rel":"http://openid.net/specs/connect/1.0/issuer","href":"https://auth.ivantili.site"}]}` 200
+  }
+  respond 404
 }

@@ -5,17 +5,14 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    networks:
-      - home-network
-    ports:
-      - "9696:9696"
+
+    # Route all traffic through gluetun VPN container
+    network_mode: "container:gluetun"
+
     volumes:
       - /srv/prowlarr/config:/config
+
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=Europe/Tallinn
-
-networks:
-  home-network:
-    external: true

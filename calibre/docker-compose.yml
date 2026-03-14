@@ -10,7 +10,7 @@ services:
       - .env
     volumes:
       - /srv/calibre/config:/config
-      - /srv/calibre/library:/books
+      - /srv/media/books:/books
 
 networks:
   proxy:

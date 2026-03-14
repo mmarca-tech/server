@@ -11,7 +11,7 @@ services:
     volumes:
       - /srv/jellyfin/config:/config
       - /srv/jellyfin/cache:/cache
-      - /srv/media/series:/media/series:ro
+      - /srv/media/tv:/media/tv:ro
       - /srv/media/movies:/media/movies:ro
       - /srv/media/music:/media/music:ro
       - /srv/media/audiobooks:/media/audiobooks:ro

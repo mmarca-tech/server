@@ -1,0 +1,22 @@
+services:
+  lidarr:
+    image: linuxserver/lidarr:latest
+    container_name: lidarr
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - home-network
+    ports:
+      - "8686:8686"
+    volumes:
+      - /srv/lidarr/config:/config
+      - /srv/media:/media
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Tallinn
+
+networks:
+  home-network:
+    external: true

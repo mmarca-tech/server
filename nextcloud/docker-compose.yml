@@ -53,7 +53,7 @@ services:
       - /srv/media/audiobooks:/media/audiobooks
       - /srv/media/podcasts:/media/podcasts
       - /srv/media/movies:/media/movies
-      - /srv/media/series:/media/series
+      - /srv/media/tv:/media/tv
     env_file:
       - .env
     environment:
