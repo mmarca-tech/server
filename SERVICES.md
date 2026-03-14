@@ -12,10 +12,10 @@ All services running on the home server. Each has its own configuration director
 **Port:** 8096 (exposed directly + via Caddy reverse proxy)  
 **Docker Compose:** `jellyfin/docker-compose.yml`
 
-- Stream movies, shows, music
+- Stream movies, shows, music, audiobooks
 - Auto-library indexing
 - Transcoding enabled
-- Metadata from The Movie Database
+- Metadata from The Movie Database / MusicBrainz
 
 **Media Libraries (shared `/srv/media` layout):**
 - `/srv/media/series` → `/media/series` (read-only)
@@ -23,7 +23,7 @@ All services running on the home server. Each has its own configuration director
 - `/srv/media/music` → `/media/music` (read-only)
 - `/srv/media/audiobooks` → `/media/audiobooks` (read-only)
 
-> Previously used a single `/srv/jellyfin/media` mount. Now shares the centralised `/srv/media` tree with other services (Navidrome, Audiobookshelf, Transmission downloads).
+> Replaced Navidrome as the music player. Music is managed/downloaded by Lidarr.
 
 **Common Issues:**
 - Indexing slow → Check storage I/O, reduce scan frequency
@@ -58,21 +58,26 @@ All services running on the home server. Each has its own configuration director
 
 ---
 
-### Navidrome (`/srv/server/navidrome`)
+### Lidarr (`/srv/server/lidarr`)
 **Status:** ✅ Running  
-**URL:** https://navidrome.example.com  
-**Port:** 4533  
-**Docker Compose:** `navidrome/docker-compose.yml`
+**Port:** 8686 (LAN only)  
+**Docker Compose:** `lidarr/docker-compose.yml`
 
-- Music streaming (Subsonic-compatible)
-- FLAC, MP3, AAC support
-- Playlist sync to clients
-- Scrobbling support
+- Music management & automation (equivalent of Sonarr/Radarr for music)
+- Monitors artists/albums, auto-downloads via Transmission
+- Moves completed downloads to `/srv/media/music/`
+- Integrates with Prowlarr (Knaben indexer) and Transmission
+
+**Media Paths (inside container):**
+- Root folder: `/media/music`
+- Downloads: `/media/downloads`
+
+**Download client:** Transmission via gluetun (`music-lidarr` category)  
+**Active indexers:** Knaben (only indexer with full music subcategory support)
 
 **Common Issues:**
-- Library not scanning → `docker logs navidrome`
-- Slow initial scan → First scan can take hours (depends on library size)
-- Transcoding issues → Check available disk space
+- Indexers not syncing from Prowlarr → Only Knaben supports Lidarr's strict music category requirements; others (TPB, 1337x, etc.) only advertise generic `Audio (3000)` which Lidarr rejects
+- Import failing → Check permissions on `/srv/media/music` (needs PUID 1000)
 
 ---
 
@@ -197,7 +202,7 @@ docker compose up -d
 
 **Common Issues:**
 - Import failing → Check permissions on `/srv/media/series` (needs PUID 1000)
-- Not finding episodes → Check Prowlarr indexer sync
+- Not finding episodes → Check Prowlarr indexer sync; indexer URLs in Sonarr must use `http://gluetun:9696/...`
 - Quality upgrades not working → Check quality profile cutoff settings
 
 ---
@@ -218,7 +223,7 @@ docker compose up -d
 
 **Common Issues:**
 - Import failing → Check permissions on `/srv/media/movies` (needs PUID 1000)
-- Not finding movies → Check Prowlarr indexer sync
+- Not finding movies → Check Prowlarr indexer sync; indexer URLs in Radarr must use `http://gluetun:9696/...`
 - Wrong quality grabbed → Adjust quality profile
 
 ---
@@ -229,14 +234,18 @@ docker compose up -d
 **Docker Compose:** `prowlarr/docker-compose.yml`
 
 - Indexer manager — single place to configure torrent/usenet indexers
-- Auto-syncs indexers to Sonarr and Radarr
-- Supports TPB, 1337x, Nyaa, and many more
+- Auto-syncs indexers to Sonarr, Radarr, and Lidarr
+- Supports TPB, 1337x, Knaben, and more
 - Uses FlareSolverr to bypass Cloudflare on protected indexers
 
+**⚠️ Network note:** Prowlarr shares gluetun's network namespace (`network_mode: service:gluetun`). It has **no `prowlarr` hostname** on `home-network`. Sonarr/Radarr/Lidarr indexer URLs must use `http://gluetun:9696/...` — not `http://prowlarr:9696/...`.
+
+**Current indexers:** 1337x, Elitetorrent, KickassTorrents, Knaben, LimeTorrents, Magnet Cat, The Pirate Bay
+
 **Common Issues:**
-- Indexers failing → Check VPN connectivity, indexer may be down
+- Indexers failing → Check VPN/gluetun connectivity
 - Cloudflare blocked → Ensure FlareSolverr tag is applied to the indexer
-- Not syncing to Sonarr/Radarr → Re-add app connections in Settings → Apps
+- Not syncing to apps → Re-add app connections in Settings → Apps; verify URLs use `gluetun` not `prowlarr`
 
 ---
 

@@ -96,12 +96,22 @@ git log --oneline -10
 # Prowlarr (indexers):   http://SERVER_IP:9696
 # Sonarr (TV):           http://SERVER_IP:8989
 # Radarr (movies):       http://SERVER_IP:7878
+# Lidarr (music):        http://SERVER_IP:8686
 # Jellyseerr (requests): http://SERVER_IP:5055
 # Bazarr (subtitles):    http://SERVER_IP:6767
 # Tdarr (transcoding):   http://SERVER_IP:8265
+# Jellyfin (media):      http://SERVER_IP:8096
+# Transmission (torrent):http://SERVER_IP:9091 (via gluetun VPN)
 
-# Request flow:
-# Jellyseerr → Sonarr/Radarr → Prowlarr → Transmission (VPN) → auto-sort → Jellyfin
+# TV/Movie request flow:
+# Jellyseerr → Sonarr/Radarr → Prowlarr (gluetun:9696) → Transmission (VPN) → auto-sort → Jellyfin
+
+# Music flow:
+# Lidarr → Prowlarr (gluetun:9696) → Transmission (VPN) → /srv/media/music → Jellyfin
+
+# ⚠️  Prowlarr runs inside gluetun network namespace.
+#     Indexer URLs in Sonarr/Radarr/Lidarr must use http://gluetun:9696/...
+#     NOT http://prowlarr:9696/...
 ```
 
 ### Torrents (via Telegram or CLI)
