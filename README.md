@@ -5,14 +5,16 @@
 - **[INFRASTRUCTURE.md](INFRASTRUCTURE.md)** — System architecture, security, monitoring schedule
 - **[SERVICES.md](SERVICES.md)** — Service-specific docs, configs, troubleshooting
 - **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** — Common commands & fast fixes
+- **[OPS_CHEAT_SHEET.md](OPS_CHEAT_SHEET.md)** — Short maintenance playbook for routine server ops
 - **[SETUP_GUIDE.md](SETUP_GUIDE.md)** — Complete step-by-step install & security setup
 
 ### 🎯 For Most Users
 
-1. **Quick fix?** → [QUICK_REFERENCE.md](QUICK_REFERENCE.md)
-2. **Service issue?** → [SERVICES.md](SERVICES.md) → Find your service
-3. **Architecture questions?** → [INFRASTRUCTURE.md](INFRASTRUCTURE.md)
-4. **Full setup from scratch?** → [SETUP_GUIDE.md](SETUP_GUIDE.md)
+1. **Routine maintenance?** → [OPS_CHEAT_SHEET.md](OPS_CHEAT_SHEET.md)
+2. **Quick fix?** → [QUICK_REFERENCE.md](QUICK_REFERENCE.md)
+3. **Service issue?** → [SERVICES.md](SERVICES.md) → Find your service
+4. **Architecture questions?** → [INFRASTRUCTURE.md](INFRASTRUCTURE.md)
+5. **Full setup from scratch?** → [SETUP_GUIDE.md](SETUP_GUIDE.md)
 
 ### 🔄 Documentation Auto-Commit
 
@@ -33,6 +35,7 @@ This repository contains Docker Compose stacks for:
 - Jellyfin
 - Invidious (privacy YouTube frontend)
 - n8n (workflow automation)
+- OpenProject (project management)
 - Jellyseerr
 - Calibre-Web
 - Navidrome

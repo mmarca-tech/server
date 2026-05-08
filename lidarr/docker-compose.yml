@@ -12,6 +12,7 @@ services:
     volumes:
       - /srv/lidarr/config:/config
       - /srv/media:/media
+      - /srv/media/downloads:/downloads
     environment:
       - PUID=1000
       - PGID=1000

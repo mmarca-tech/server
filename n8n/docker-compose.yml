@@ -6,18 +6,62 @@ services:
       - no-new-privileges:true
     networks:
       - proxy
+      - internal
     env_file:
       - .env
     environment:
-      N8N_HOST: ${N8N_HOST}
-      N8N_PORT: ${N8N_PORT:-5678}
-      N8N_PROTOCOL: https
-      WEBHOOK_URL: https://${N8N_HOST}/
-      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
-      TZ: ${TZ:-Europe/Tallinn}
+      N8N_HOST: "${N8N_HOST}"
+      N8N_PORT: "${N8N_PORT:-5678}"
+      N8N_PROTOCOL: "https"
+      WEBHOOK_URL: "https://${N8N_HOST}/"
+      N8N_ENCRYPTION_KEY: "${N8N_ENCRYPTION_KEY}"
+      TZ: "${TZ:-Europe/Tallinn}"
+      N8N_TRUST_PROXY: "${N8N_TRUST_PROXY}"
+      N8N_RUNNERS_MODE: "external"
+      N8N_RUNNERS_BROKER_LISTEN_ADDRESS: "0.0.0.0"
+      N8N_RUNNERS_AUTH_TOKEN: "${N8N_RUNNERS_AUTH_TOKEN}"
+      N8N_NATIVE_PYTHON_RUNNER: "true"
     volumes:
       - /srv/n8n/data:/home/node/.n8n
+
+  task-runners:
+    build:
+      context: .
+      dockerfile: Dockerfile.runners.debian
+    image: n8n-runners-debian:local
+    restart: unless-stopped
+    depends_on:
+      - n8n
+      - browserless
+    networks:
+      - internal
+    env_file:
+      - .env
+    environment:
+      N8N_RUNNERS_AUTH_TOKEN: "${N8N_RUNNERS_AUTH_TOKEN}"
+      N8N_RUNNERS_TASK_BROKER_URI: "http://n8n:5679"
+      N8N_RUNNERS_TASK_TIMEOUT: "300"
+      N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT: "15"
+      BROWSERLESS_WS: "ws://browserless:3000?token=${BROWSERLESS_TOKEN}"
+    volumes:
+      - ./n8n-task-runners.json:/etc/n8n-task-runners.json:ro
+
+  browserless:
+    image: browserless/chrome:latest
+    restart: unless-stopped
+    networks:
+      - internal
+    environment:
+      TOKEN: "${BROWSERLESS_TOKEN}"
+      TZ: "${TZ:-Europe/Tallinn}"
+      CONCURRENT: "2"
+      QUEUED: "10"
+      CORS: "true"
+      PREBOOT_CHROME: "true"
+      KEEP_ALIVE: "true"
 
 networks:
   proxy:
     external: true
+  internal:
+    driver: bridge

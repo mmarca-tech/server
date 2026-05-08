@@ -16,3 +16,5 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=Europe/Tallinn
+      # Disable HTTP/2 in .NET - archive.org HTTP/2 stalls through gluetun VPN
+      - DOTNET_SYSTEM_NET_HTTP_SOCKETSHTTPHANDLER_HTTP2SUPPORT=false

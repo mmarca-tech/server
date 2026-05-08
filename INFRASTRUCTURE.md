@@ -74,6 +74,7 @@ Home server running on a Debian 13 laptop with Docker Compose, Caddy reverse pro
 | **Home Assistant** | homeassistant | 8123 | ✅ | LAN only + reverse proxy |
 | **Nextcloud** | nextcloud | 80 | ✅ | File sync + productivity |
 | **n8n** | n8n | 5678 | ✅ | Workflow automation |
+| **OpenProject** | openproject | 8080 | ⚙️ | Project management |
 | **MollySocket** | mollysocket | - | ✅ | Signal messaging relay |
 | **AdGuard** | adguard | 3001 (UI) | ✅ | DNS + ad-blocking |
 

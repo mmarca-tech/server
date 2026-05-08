@@ -134,6 +134,39 @@ docker compose up -d
 
 ---
 
+### OpenProject (`/srv/server/openproject`)
+**Status:** ⚙️ Configured, not deployed yet  
+**URL:** https://openproject.example.com  
+**Port:** 8080 (internal, via Caddy)  
+**Docker Compose:** `openproject/docker-compose.yml`
+
+- Project management, work packages, timelines, wiki, and team collaboration
+- Reverse proxied through Caddy on the shared `proxy` Docker network
+- Backed by PostgreSQL and Redis
+- Persistent attachments/assets stored under `/srv/openproject/assets`
+- Database stored under `/srv/databases/openproject-postgres`
+
+**Services:**
+- `openproject` — main web app
+- `openproject-worker` — background jobs
+- `openproject-db` — PostgreSQL database
+- `openproject-cache` — Redis cache
+
+**First run:**
+```bash
+mkdir -p /srv/openproject/assets /srv/databases/openproject-postgres
+cd /srv/server/openproject
+cp .env .env.bak
+# Edit .env and replace CHANGE_ME_* secrets first
+docker compose up -d
+```
+
+**Common Issues:**
+- App boot loop → check `.env` secrets and database connectivity
+- Reverse proxy 502 → verify Caddy is on the same `proxy` network and target is `openproject:8080`
+- Assets/attachments permission issues → check ownership and permissions on `/srv/openproject/assets`
+- Wrong URL scheme or redirect loop → confirm `OPENPROJECT_HTTPS=true` and hostname matches Caddy/DNS
+
 ### Transmission (`/srv/server/transmission`)
 **Status:** ✅ Running  
 **URL:** https://transmission.example.com  

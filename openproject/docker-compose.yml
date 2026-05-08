@@ -1,0 +1,104 @@
+services:
+  openproject-db:
+    image: ${OPENPROJECT_DB_IMAGE}
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - internal
+    volumes:
+      - /srv/databases/openproject-postgres:/var/lib/postgresql/data
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${OPENPROJECT_DB_NAME}
+      POSTGRES_USER: ${OPENPROJECT_DB_USER}
+      POSTGRES_PASSWORD: ${OPENPROJECT_DB_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  openproject-cache:
+    image: ${OPENPROJECT_CACHE_IMAGE}
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  openproject:
+    image: ${OPENPROJECT_IMAGE}
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      openproject-db:
+        condition: service_healthy
+      openproject-cache:
+        condition: service_healthy
+    networks:
+      - proxy
+      - internal
+    env_file:
+      - .env
+    environment:
+      OPENPROJECT_HTTPS: "true"
+      OPENPROJECT_HOST__NAME: ${OPENPROJECT_HOST}
+      OPENPROJECT_SECRET_KEY_BASE: ${OPENPROJECT_SECRET_KEY_BASE}
+      OPENPROJECT_ADMIN_USER__PASSWORD: ${OPENPROJECT_ADMIN_PASSWORD}
+      DATABASE_URL: postgres://${OPENPROJECT_DB_USER}:${OPENPROJECT_DB_PASSWORD}@openproject-db:5432/${OPENPROJECT_DB_NAME}
+      OPENPROJECT_CACHE__MEMCACHE__SERVER: ""
+      CACHE_SERVER: redis
+      CACHE_REDIS_URL: redis://openproject-cache:6379/0
+      OPENPROJECT_RAILS_RELATIVE_URL_ROOT: ""
+      RAILS_MIN_THREADS: "4"
+      RAILS_MAX_THREADS: "16"
+      IMAP_ENABLED: "false"
+      TZ: ${TZ:-Europe/Tallinn}
+    volumes:
+      - /srv/openproject/assets:/var/openproject/assets
+
+  openproject-worker:
+    image: ${OPENPROJECT_IMAGE}
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      openproject-db:
+        condition: service_healthy
+      openproject-cache:
+        condition: service_healthy
+    networks:
+      - internal
+    env_file:
+      - .env
+    command: ["./docker/prod/worker"]
+    environment:
+      OPENPROJECT_HTTPS: "true"
+      OPENPROJECT_HOST__NAME: ${OPENPROJECT_HOST}
+      OPENPROJECT_SECRET_KEY_BASE: ${OPENPROJECT_SECRET_KEY_BASE}
+      OPENPROJECT_ADMIN_USER__PASSWORD: ${OPENPROJECT_ADMIN_PASSWORD}
+      DATABASE_URL: postgres://${OPENPROJECT_DB_USER}:${OPENPROJECT_DB_PASSWORD}@openproject-db:5432/${OPENPROJECT_DB_NAME}
+      OPENPROJECT_CACHE__MEMCACHE__SERVER: ""
+      CACHE_SERVER: redis
+      CACHE_REDIS_URL: redis://openproject-cache:6379/0
+      OPENPROJECT_RAILS_RELATIVE_URL_ROOT: ""
+      RAILS_MIN_THREADS: "4"
+      RAILS_MAX_THREADS: "16"
+      IMAP_ENABLED: "false"
+      TZ: ${TZ:-Europe/Tallinn}
+    volumes:
+      - /srv/openproject/assets:/var/openproject/assets
+
+networks:
+  proxy:
+    external: true
+  internal:
+    driver: bridge

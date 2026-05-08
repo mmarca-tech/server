@@ -12,6 +12,9 @@ services:
     volumes:
       - /srv/sonarr/config:/config
       - /srv/media:/media
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
     environment:
       - PUID=1000
       - PGID=1000
