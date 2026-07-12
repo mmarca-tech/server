@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# torrent-search.sh — Non-interactive torrent search for OpenClaw/Telegram
+# torrent-search.sh — Non-interactive search helper for lawful torrent content.
 # Usage:
 #   ./torrent-search.sh search "query"                      → JSON array of results
 #   ./torrent-search.sh download "magnet_url" [download_dir] → Add to Transmission
@@ -11,7 +11,8 @@
 set -euo pipefail
 
 # ── Transmission config ──────────────────────────────────────────────────────
-TR_HOST="${TR_HOST:-127.0.0.1}"
+TR_HOST="${TR_HOST:-$(ip -4 -o address show dev wg0 2>/dev/null | awk 'NR==1 {split($4, address, "/"); print address[1}')}"
+TR_HOST="${TR_HOST:-10.66.0.1}"
 TR_PORT="${TR_PORT:-9091}"
 TR_USER="${TR_USER:-}"
 TR_PASS="${TR_PASS:-}"
@@ -52,11 +53,10 @@ search_tpb() {
   seeds_list=$(echo "$html" | grep -oP '(?<=<td align="right">)[0-9]+(?=</td>)')
 
   # Pair them up: every 2 seed values = seeds, leeches for one torrent
-  local i=0
   local -a seed_arr=()
   while IFS= read -r s; do
     seed_arr+=("$s")
-  done <<< "$seeds_list"
+  done <<<"$seeds_list"
 
   local idx=0
   while IFS= read -r magnet; do
@@ -64,10 +64,10 @@ search_tpb() {
     # Extract name from dn= parameter
     name=$(echo "$magnet" | grep -oP '(?<=dn=)[^&]+' | python3 -c "import urllib.parse,sys; print(urllib.parse.unquote_plus(sys.stdin.read().strip()))" 2>/dev/null || echo "Unknown")
     seeds="${seed_arr[$idx]:-0}"
-    idx=$((idx + 2))  # skip leeches
+    idx=$((idx + 2)) # skip leeches
 
     [[ -n "$name" && "$name" != "Unknown" ]] && printf 'TPB\t%s\t-\t%s\t%s\n' "$name" "$seeds" "$magnet"
-  done <<< "$magnets" 2>/dev/null || true
+  done <<<"$magnets" 2>/dev/null || true
 }
 
 # ── 1337x Scraper ─────────────────────────────────────────────────────────────
@@ -84,7 +84,10 @@ search_1337x() {
 
   for m in "${LEET_MIRRORS[@]}"; do
     html=$(curl -sL --max-time 12 "$m/search/$encoded/1/" 2>/dev/null) || continue
-    [[ ${#html} -gt 1000 ]] && { mirror="$m"; break; }
+    [[ ${#html} -gt 1000 ]] && {
+      mirror="$m"
+      break
+    }
     html=""
   done
   [[ -z "$mirror" ]] && return
@@ -116,7 +119,7 @@ for row in rows:
 
     url = '${mirror}' + link
     print(f'1337X\t{name}\t{size}\t{seeds}\t{url}')
-" <<< "$html" 2>/dev/null | head -20 || true
+" <<<"$html" 2>/dev/null | head -20 || true
 }
 
 # ── Nyaa Scraper ──────────────────────────────────────────────────────────────
@@ -150,7 +153,7 @@ for row in rows:
     seeds = seed_match.group(1) if seed_match else '0'
 
     print(f'NYAA\t{name}\t{size}\t{seeds}\t{magnet}')
-" <<< "$html" 2>/dev/null | head -20 || true
+" <<<"$html" 2>/dev/null | head -20 || true
 }
 
 # ── Search command ────────────────────────────────────────────────────────────
@@ -160,11 +163,11 @@ do_search() {
   tmpfile=$(mktemp)
 
   # Run all scrapers in parallel
-  (search_tpb   "$query" 2>/dev/null || true) >> "$tmpfile" &
+  (search_tpb "$query" 2>/dev/null || true) >>"$tmpfile" &
   local pid1=$!
-  (search_1337x "$query" 2>/dev/null || true) >> "$tmpfile" &
+  (search_1337x "$query" 2>/dev/null || true) >>"$tmpfile" &
   local pid2=$!
-  (search_nyaa  "$query" 2>/dev/null || true) >> "$tmpfile" &
+  (search_nyaa "$query" 2>/dev/null || true) >>"$tmpfile" &
   local pid3=$!
 
   wait $pid1 $pid2 $pid3 2>/dev/null || true
@@ -172,11 +175,11 @@ do_search() {
   # Filter: seeds > 0, has a link, sort by seeds desc
   local filtered
   filtered=$(mktemp)
-  awk -F'\t' 'NF>=5 && $4+0 > 0 && $5 != ""' "$tmpfile" | sort -t$'\t' -k4 -rn | head -15 > "$filtered"
+  awk -F'\t' 'NF>=5 && $4+0 > 0 && $5 != ""' "$tmpfile" | sort -t$'\t' -k4 -rn | head -15 >"$filtered"
   rm -f "$tmpfile"
 
   local count
-  count=$(wc -l < "$filtered")
+  count=$(wc -l <"$filtered")
 
   if [[ "$count" -eq 0 ]]; then
     echo "[]"
@@ -203,7 +206,7 @@ for i, line in enumerate(sys.stdin, 1):
     })
 
 print(json.dumps(results, indent=2))
-" < "$filtered"
+" <"$filtered"
 
   rm -f "$filtered"
 }
@@ -252,25 +255,37 @@ do_status() {
 do_resolve_magnet() {
   local url="$1"
   local html
-  html=$(curl -sL --max-time 12 "$url" 2>/dev/null) || { echo ""; return; }
+  html=$(curl -sL --max-time 12 "$url" 2>/dev/null) || {
+    echo ""
+    return
+  }
   echo "$html" | grep -oP 'magnet:\?[^"]+' | head -1
 }
 
 # ── Entry point ───────────────────────────────────────────────────────────────
 case "${1:-}" in
   search)
-    [[ -z "${2:-}" ]] && { echo '{"error":"No query provided"}'; exit 1; }
+    [[ -z "${2:-}" ]] && {
+      echo '{"error":"No query provided"}'
+      exit 1
+    }
     do_search "$2"
     ;;
   download)
-    [[ -z "${2:-}" ]] && { echo '{"error":"No link provided"}'; exit 1; }
+    [[ -z "${2:-}" ]] && {
+      echo '{"error":"No link provided"}'
+      exit 1
+    }
     do_download "$2" "${3:-}"
     ;;
   status)
     do_status
     ;;
   resolve)
-    [[ -z "${2:-}" ]] && { echo '{"error":"No URL provided"}'; exit 1; }
+    [[ -z "${2:-}" ]] && {
+      echo '{"error":"No URL provided"}'
+      exit 1
+    }
     do_resolve_magnet "$2"
     ;;
   *)

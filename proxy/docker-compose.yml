@@ -3,28 +3,27 @@ services:
     image: ${CADDY_IMAGE}
     restart: unless-stopped
     read_only: true
-    tmpfs:
-      - /tmp
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
-    cap_add:
-      - NET_BIND_SERVICE
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
     ports:
-      - "192.168.1.20:80:80"
-      - "192.168.1.20:443:443"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    networks:
-      - proxy
+      - 80:80
+      - 443:443
+      - 443:443/udp
+    networks: [proxy]
     volumes:
       - /srv/proxy/caddy-data:/data
       - /srv/proxy/caddy-config:/config
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
-    env_file:
-      - .env
+    environment:
+      ROOT_DOMAIN: ${ROOT_DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    healthcheck:
+      test: [CMD, caddy, version]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
 networks:
-  proxy:
-    external: true
+  proxy: {external: true}

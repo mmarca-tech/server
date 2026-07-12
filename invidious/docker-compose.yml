@@ -1,75 +1,65 @@
 services:
+  database:
+    image: ${POSTGRES16_IMAGE}
+    restart: unless-stopped
+    security_opt: [no-new-privileges:true]
+    networks: [internal]
+    volumes:
+      - /srv/invidious/db:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/01-invidious.sql:ro
+    environment:
+      POSTGRES_DB: invidious
+      POSTGRES_USER: invidious
+      POSTGRES_PASSWORD: ${INVIDIOUS_DB_PASSWORD}
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U invidious']
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  companion:
+    image: ${INVIDIOUS_COMPANION_IMAGE}
+    restart: unless-stopped
+    read_only: true
+    user: 10001:10001
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks: [internal]
+    tmpfs: [/var/tmp]
+    environment:
+      SERVER_SECRET_KEY: ${INVIDIOUS_COMPANION_SECRET}
+
   invidious:
     image: ${INVIDIOUS_IMAGE}
     restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    networks:
-      - proxy
-      - invidious-net
-    env_file:
-      - .env
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      database: {condition: service_healthy}
+    networks: [internal]
+    ports:
+      - ${WG_PRIVATE_IP}:3000:3000
     environment:
       INVIDIOUS_CONFIG: |
         db:
           dbname: invidious
           user: invidious
           password: ${INVIDIOUS_DB_PASSWORD}
-          host: invidious-db
+          host: database
           port: 5432
         check_tables: true
-        domain: ${INVIDIOUS_DOMAIN}
-        https_only: true
-        external_port: 443
+        domain: invidious.${ROOT_DOMAIN}
         registration_enabled: false
-        login_enabled: true
         statistics_enabled: false
-        admins: ["mmarca@pm.me"]
         hmac_key: ${INVIDIOUS_HMAC_KEY}
         invidious_companion:
-          - private_url: "http://invidious-companion:8282"
+          - private_url: http://companion:8282
         invidious_companion_key: ${INVIDIOUS_COMPANION_SECRET}
-    depends_on:
-      invidious-db:
-        condition: service_healthy
-
-  invidious-companion:
-    image: ${INVIDIOUS_COMPANION_IMAGE}
-    restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    read_only: true
-    user: 10001:10001
-    cap_drop:
-      - ALL
-    networks:
-      - invidious-net
-    volumes:
-      - /var/tmp/youtubei.js:/var/tmp/youtubei.js:rw
-    environment:
-      SERVER_SECRET_KEY: ${INVIDIOUS_COMPANION_SECRET}
-
-  invidious-db:
-    image: ${INVIDIOUS_DB_IMAGE}
-    restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    networks:
-      - invidious-net
-    volumes:
-      - /srv/invidious/db:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: invidious
-      POSTGRES_USER: invidious
-      POSTGRES_PASSWORD: ${INVIDIOUS_DB_PASSWORD}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U invidious"]
-      interval: 10s
+      test: [CMD-SHELL, 'wget -nv --tries=1 --spider http://127.0.0.1:3000/api/v1/stats || exit 1']
+      interval: 30s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 30s
 
 networks:
-  proxy:
-    external: true
-  invidious-net:
-    internal: true
+  internal: {}

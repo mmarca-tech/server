@@ -1,15 +1,8 @@
 **/.env
 *.bak
 *.torrent
+/config/deploy.env
+/secrets/
+/.codebase-memory/
 
-# Transmission runtime data (changes on every run)
-transmission/config/dht.dat
-transmission/config/stats.json
-transmission/config/queue.json
-transmission/config/settings.json
-transmission/config/resume/
-transmission/config/torrents/
-transmission/config/.*.swp
-authelia/config/db.sqlite3
-authelia/config/notification.txt
-authelia/config/*
+/MONITORING_REPORTS/

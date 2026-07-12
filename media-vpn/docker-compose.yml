@@ -1,0 +1,56 @@
+services:
+  gluetun:
+    image: ${GLUETUN_IMAGE}
+    restart: unless-stopped
+    cap_add: [NET_ADMIN]
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    networks: [home-network]
+    ports:
+      - ${WG_PRIVATE_IP}:9091:9091
+      - ${WG_PRIVATE_IP}:9696:9696
+    volumes:
+      - /srv/gluetun:/gluetun
+    environment:
+      VPN_SERVICE_PROVIDER: protonvpn
+      VPN_TYPE: wireguard
+      WIREGUARD_PRIVATE_KEY: ${PROTON_WIREGUARD_PRIVATE_KEY}
+      WIREGUARD_ADDRESSES: ${PROTON_WIREGUARD_ADDRESSES}
+      SERVER_COUNTRIES: ${PROTON_SERVER_COUNTRIES:-Estonia}
+      VPN_PORT_FORWARDING: "on"
+      PORT_FORWARD_ONLY: "on"
+      FIREWALL_INPUT_PORTS: 9091,9696
+      TZ: ${TZ}
+
+  transmission:
+    image: ${TRANSMISSION_IMAGE}
+    restart: unless-stopped
+    network_mode: service:gluetun
+    depends_on:
+      gluetun: {condition: service_healthy}
+    volumes:
+      - /srv/transmission/config:/config
+      - /srv/media/downloads:/downloads
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      TRANSMISSION_DOWNLOAD_DIR: /downloads
+      TRANSMISSION_INCOMPLETE_DIR: /downloads/incomplete
+
+  prowlarr:
+    image: ${PROWLARR_IMAGE}
+    restart: unless-stopped
+    network_mode: service:gluetun
+    depends_on:
+      gluetun: {condition: service_healthy}
+    volumes:
+      - /srv/prowlarr/config:/config
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+
+networks:
+  home-network: {external: true}
+

@@ -1,85 +1,67 @@
 {
-  email {$ACME_EMAIL}
-  admin off
+	email {$ACME_EMAIL}
+	admin off
+	servers {
+		protocols h1 h2 h3
+	}
 }
 
 (secure_headers) {
-  encode zstd gzip
-  header {
-    -Server
-    X-Content-Type-Options "nosniff"
-    X-Frame-Options "SAMEORIGIN"
-    Referrer-Policy "strict-origin-when-cross-origin"
-    Permissions-Policy "camera=(), microphone=(), geolocation=()"
-    Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-  }
+	encode zstd gzip
+	header {
+		-Server
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	}
 }
 
 nc.{$ROOT_DOMAIN} {
-  import secure_headers
-  reverse_proxy nextcloud:80
+	import secure_headers
+	reverse_proxy nextcloud:80
 }
 
 immich.{$ROOT_DOMAIN} {
-  import secure_headers
-  reverse_proxy immich-server:2283
+	import secure_headers
+	reverse_proxy immich-server:2283
 }
 
 hometheater.{$ROOT_DOMAIN} {
-  import secure_headers
-  reverse_proxy jellyfin:8096
+	import secure_headers
+	reverse_proxy jellyfin:8096
 }
 
-jellyseerr.{$ROOT_DOMAIN} {
-  import secure_headers
-  reverse_proxy jellyseerr:5055
+seerr.{$ROOT_DOMAIN} {
+	import secure_headers
+	reverse_proxy seerr:5055
 }
 
 calibre.{$ROOT_DOMAIN} {
-  import secure_headers
-  reverse_proxy calibre-web:8083
+	import secure_headers
+	reverse_proxy calibre-web:8083
 }
 
 audiobookshelf.{$ROOT_DOMAIN} {
-  import secure_headers
-  reverse_proxy audiobookshelf:80
-}
-
-# Optional Home Assistant through Caddy while Home Assistant runs in host network mode.
-ha.{$ROOT_DOMAIN} {
-  import secure_headers
-  reverse_proxy host.docker.internal:8123
-}
-
-
-invidious.{$ROOT_DOMAIN} {                                                                      
-  import secure_headers                                                                         
-  @blocked not remote_ip 192.168.1.0/24                                                         
-  respond @blocked 403                                                                          
-  reverse_proxy invidious:3000                                                                  
+	import secure_headers
+	reverse_proxy audiobookshelf:80
 }
 
 n8n.{$ROOT_DOMAIN} {
-  import secure_headers
-  reverse_proxy n8n:5678
+	import secure_headers
+	reverse_proxy n8n:5678
 }
 
 openproject.{$ROOT_DOMAIN} {
-  import secure_headers
-  reverse_proxy openproject:8080
+	import secure_headers
+	reverse_proxy openproject:8080
 }
 
 auth.{$ROOT_DOMAIN} {
-  import secure_headers
-  reverse_proxy authelia:9091
+	import secure_headers
+	reverse_proxy authelia:9091
 }
 
-
 {$ROOT_DOMAIN} {
-  import secure_headers
-  handle /.well-known/webfinger {
-    header Content-Type "application/jrd+json"
-    respond `{"subject":"acct:manuel@ivantili.site","links":[{"rel":"http://openid.net/specs/connect/1.0/issuer","href":"https://auth.ivantili.site"}]}` 200
-  }
-  respond 404
+	import secure_headers
+	respond "Server infrastructure is online." 200
 }

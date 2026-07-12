@@ -1,0 +1,11 @@
+[Unit]
+Description=Run server infrastructure health report daily
+
+[Timer]
+OnCalendar=daily
+RandomizedDelaySec=30m
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+

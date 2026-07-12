@@ -1,74 +1,61 @@
 services:
-  immich-db:
+  database:
     image: ${IMMICH_DB_IMAGE}
     restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    environment:
-      POSTGRES_USER: immich
-      POSTGRES_DB: immich
-    env_file:
-      - .env
+    security_opt: [no-new-privileges:true]
+    shm_size: 128mb
+    networks: [internal]
     volumes:
       - /srv/databases/immich-postgres:/var/lib/postgresql/data
-    networks:
-      - internal
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U immich -d immich"]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-
-  immich-redis:
-    image: ${IMMICH_REDIS_IMAGE}
-    restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    networks:
-      - internal
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-
-  immich-server:
-    image: ${IMMICH_SERVER_IMAGE}
-    restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    depends_on:
-      immich-db:
-        condition: service_healthy
-      immich-redis:
-        condition: service_healthy
-    env_file:
-      - .env
     environment:
-      DB_HOSTNAME: immich-db
-      DB_USERNAME: immich
-      DB_DATABASE_NAME: immich
-      REDIS_HOSTNAME: immich-redis
-      IMMICH_MACHINE_LEARNING_URL: http://immich-machine-learning:3003
-    volumes:
-      - /srv/media/immich/library:/usr/src/app/upload
-      - /etc/localtime:/etc/localtime:ro
-    networks:
-      - proxy
-      - internal
+      POSTGRES_PASSWORD: ${IMMICH_DB_PASSWORD}
+      POSTGRES_USER: immich
+      POSTGRES_DB: immich
+      POSTGRES_INITDB_ARGS: --data-checksums
+      DB_STORAGE_TYPE: SSD
+    healthcheck:
+      disable: false
+
+  cache:
+    image: ${IMMICH_CACHE_IMAGE}
+    restart: unless-stopped
+    security_opt: [no-new-privileges:true]
+    networks: [internal]
+    healthcheck:
+      test: [CMD-SHELL, 'redis-cli ping || exit 1']
 
   immich-machine-learning:
     image: ${IMMICH_ML_IMAGE}
     restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
+    security_opt: [no-new-privileges:true]
+    networks: [internal]
     volumes:
       - /srv/immich/model-cache:/cache
-    networks:
-      - internal
+    healthcheck:
+      disable: false
+
+  immich-server:
+    image: ${IMMICH_SERVER_IMAGE}
+    restart: unless-stopped
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      database: {condition: service_healthy}
+      cache: {condition: service_healthy}
+    networks: [proxy, internal]
+    volumes:
+      - /srv/media/immich/library:/data
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      DB_HOSTNAME: database
+      DB_USERNAME: immich
+      DB_PASSWORD: ${IMMICH_DB_PASSWORD}
+      DB_DATABASE_NAME: immich
+      REDIS_HOSTNAME: cache
+      IMMICH_MACHINE_LEARNING_URL: http://immich-machine-learning:3003
+      TZ: ${TZ}
+    healthcheck:
+      disable: false
 
 networks:
-  proxy:
-    external: true
-  internal:
-    driver: bridge
+  proxy: {external: true}
+  internal: {}

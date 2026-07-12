@@ -1,67 +1,41 @@
 SHELL := /bin/bash
 
-.PHONY: bootstrap media init pull up down logs openclaw-install openclaw-onboard security-check docker-install local-llm-install clawdbot-local clawdbot-openai clawdbot-mistral clawdbot-anthropic master-setup ha-public-enable nextcloud-fix nextcloud-fix-expensive
+.PHONY: deploy-check deploy resume up down pull status logs verify backup restore test
 
-bootstrap:
-	./scripts/bootstrap-host.sh
+deploy-check:
+	sudo DEPLOY_CONFIG="$${DEPLOY_CONFIG:-/root/server.env}" ./scripts/deploy.sh --check
 
-media:
-	./scripts/prepare-shared-media.sh
+deploy:
+	sudo DEPLOY_CONFIG="$${DEPLOY_CONFIG:-/root/server.env}" ./scripts/deploy.sh
 
-init:
-	./scripts/init-env.sh
-
-pull:
-	./scripts/pull-all.sh
+resume:
+	sudo DEPLOY_CONFIG="$${DEPLOY_CONFIG:-/root/server.env}" ./scripts/deploy.sh --resume
 
 up:
-	./scripts/up-all.sh
+	./scripts/stack.sh up
 
 down:
-	./scripts/down-all.sh
+	./scripts/stack.sh down
+
+pull:
+	./scripts/stack.sh pull
+
+status:
+	./scripts/stack.sh status
 
 logs:
-	@if [ -z "$(stack)" ]; then \
-		echo "Usage: make logs stack=<stack> [service=<service>]"; \
-		exit 1; \
-	fi
-	./scripts/logs.sh "$(stack)" "$(service)"
+	@test -n "$(stack)" || { echo "Usage: make logs stack=<name>"; exit 1; }
+	./scripts/stack.sh logs "$(stack)"
 
-openclaw-install:
-	./scripts/install-openclaw-host.sh
+verify:
+	./scripts/stack.sh verify
 
-openclaw-onboard:
-	./scripts/openclaw-onboard.sh
+backup:
+	./scripts/stack.sh backup
 
-security-check:
-	./scripts/security-check.sh
+restore:
+	@test -n "$(backup)" || { echo "Usage: make restore backup=/srv/backups/server-infra-TIMESTAMP"; exit 1; }
+	./scripts/stack.sh restore "$(backup)" --confirm
 
-docker-install:
-	./scripts/install-docker-host.sh
-
-local-llm-install:
-	./scripts/install-local-llm.sh
-
-clawdbot-local:
-	./scripts/connect-clawdbot-local.sh
-
-clawdbot-openai:
-	./scripts/connect-clawdbot-openai.sh
-
-clawdbot-mistral:
-	./scripts/connect-clawdbot-mistral.sh
-
-clawdbot-anthropic:
-	./scripts/connect-clawdbot-anthropic.sh
-
-master-setup:
-	./scripts/master-setup.sh
-
-ha-public-enable:
-	./scripts/enable-ha-public.sh
-
-nextcloud-fix:
-	./scripts/nextcloud-fix.sh
-
-nextcloud-fix-expensive:
-	./scripts/nextcloud-fix.sh --include-expensive
+test:
+	./scripts/test-infra.sh

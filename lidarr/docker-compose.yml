@@ -1,23 +1,18 @@
 services:
   lidarr:
-    image: linuxserver/lidarr:latest
-    container_name: lidarr
+    image: ${LIDARR_IMAGE}
     restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    networks:
-      - home-network
+    security_opt: [no-new-privileges:true]
+    networks: [home-network]
     ports:
-      - "8686:8686"
+      - ${WG_PRIVATE_IP}:8686:8686
     volumes:
       - /srv/lidarr/config:/config
       - /srv/media:/media
-      - /srv/media/downloads:/downloads
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/Tallinn
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
 
 networks:
-  home-network:
-    external: true
+  home-network: {external: true}

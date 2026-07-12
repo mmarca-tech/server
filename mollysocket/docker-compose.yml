@@ -1,38 +1,32 @@
 services:
   mollysocket:
     image: ${MOLLYSOCKET_IMAGE}
-    command:
-      - server
+    command: [server]
     restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
-    env_file:
-      - .env
-    environment:
-      MOLLY_HOST: ${MOLLY_HOST:-0.0.0.0}
-      MOLLY_PORT: ${MOLLY_PORT:-8020}
-      MOLLY_DB: ${MOLLY_DB:-/data/ms.sqlite}
-      MOLLY_WEBSERVER: ${MOLLY_WEBSERVER:-false}
-      RUST_LOG: ${RUST_LOG:-info}
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    networks: [internal]
     volumes:
       - /srv/mollysocket/data:/data
+    environment:
+      MOLLY_HOST: 127.0.0.1
+      MOLLY_PORT: 8020
+      MOLLY_DB: /data/ms.sqlite
+      MOLLY_WEBSERVER: "false"
+      MOLLY_VAPID_PRIVKEY: ${MOLLY_VAPID_PRIVKEY}
+      RUST_LOG: info
 
-  mollysocket-cli:
+  cli:
     image: ${MOLLYSOCKET_IMAGE}
-    profiles:
-      - tools
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
-    env_file:
-      - .env
-    environment:
-      MOLLY_DB: ${MOLLY_DB:-/data/ms.sqlite}
-      RUST_LOG: ${RUST_LOG:-info}
+    profiles: [tools]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    networks: [internal]
     volumes:
       - /srv/mollysocket/data:/data
-    entrypoint:
-      - mollysocket
+    entrypoint: [mollysocket]
+    environment:
+      MOLLY_VAPID_PRIVKEY: ${MOLLY_VAPID_PRIVKEY}
+
+networks:
+  internal: {internal: true}

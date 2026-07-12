@@ -1,25 +1,18 @@
 services:
   radarr:
-    image: linuxserver/radarr:latest
-    container_name: radarr
+    image: ${RADARR_IMAGE}
     restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    networks:
-      - home-network
+    security_opt: [no-new-privileges:true]
+    networks: [home-network]
     ports:
-      - "7878:7878"
+      - ${WG_PRIVATE_IP}:7878:7878
     volumes:
       - /srv/radarr/config:/config
       - /srv/media:/media
-    dns:
-      - 1.1.1.1
-      - 8.8.8.8
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/Tallinn
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
 
 networks:
-  home-network:
-    external: true
+  home-network: {external: true}

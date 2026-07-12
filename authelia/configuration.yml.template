@@ -1,0 +1,33 @@
+server:
+  address: tcp://0.0.0.0:9091
+
+log:
+  level: info
+
+identity_validation:
+  reset_password:
+    jwt_secret: overridden-by-environment
+
+authentication_backend:
+  file:
+    path: /config/users_database.yml
+
+access_control:
+  default_policy: one_factor
+
+session:
+  secret: overridden-by-environment
+  cookies:
+    - domain: __ROOT_DOMAIN__
+      authelia_url: https://auth.__ROOT_DOMAIN__
+      default_redirection_url: https://__ROOT_DOMAIN__
+
+storage:
+  encryption_key: overridden-by-environment
+  local:
+    path: /data/db.sqlite3
+
+notifier:
+  filesystem:
+    filename: /data/notification.txt
+

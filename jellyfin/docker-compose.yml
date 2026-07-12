@@ -2,22 +2,15 @@ services:
   jellyfin:
     image: ${JELLYFIN_IMAGE}
     restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    ports:
-      - "8096:8096"
-    networks:
-      - proxy
+    security_opt: [no-new-privileges:true]
+    networks: [proxy, home-network]
     volumes:
       - /srv/jellyfin/config:/config
       - /srv/jellyfin/cache:/cache
-      - /srv/media/tv:/media/tv:ro
-      - /srv/media/movies:/media/movies:ro
-      - /srv/media/music:/media/music:ro
-      - /srv/media/audiobooks:/media/audiobooks:ro
-    env_file:
-      - .env
+      - /srv/media:/media:ro
+    environment:
+      TZ: ${TZ}
 
 networks:
-  proxy:
-    external: true
+  proxy: {external: true}
+  home-network: {external: true}

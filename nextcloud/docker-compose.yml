@@ -1,73 +1,62 @@
 services:
-  nextcloud-db:
+  database:
     image: ${NEXTCLOUD_DB_IMAGE}
     restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
+    security_opt: [no-new-privileges:true]
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
-    networks:
-      - internal
+    networks: [internal]
     volumes:
       - /srv/databases/nextcloud-mariadb:/var/lib/mysql
-    env_file:
-      - .env
     environment:
+      MARIADB_ROOT_PASSWORD: ${NEXTCLOUD_DB_ROOT_PASSWORD}
       MARIADB_DATABASE: nextcloud
       MARIADB_USER: nextcloud
+      MARIADB_PASSWORD: ${NEXTCLOUD_DB_PASSWORD}
     healthcheck:
-      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -uroot -p\"$${MARIADB_ROOT_PASSWORD}\""]
-      interval: 30s
+      test: [CMD-SHELL, 'mariadb-admin ping -h 127.0.0.1 -uroot -p"$${MARIADB_ROOT_PASSWORD}"']
+      interval: 15s
       timeout: 5s
-      retries: 5
+      retries: 20
 
-  nextcloud-redis:
-    image: ${NEXTCLOUD_REDIS_IMAGE}
+  cache:
+    image: ${REDIS_IMAGE}
     restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    networks:
-      - internal
+    security_opt: [no-new-privileges:true]
+    networks: [internal]
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 30s
+      test: [CMD, redis-cli, ping]
+      interval: 15s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   nextcloud:
     image: ${NEXTCLOUD_APP_IMAGE}
     restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
+    security_opt: [no-new-privileges:true]
     depends_on:
-      nextcloud-db:
-        condition: service_healthy
-      nextcloud-redis:
-        condition: service_healthy
-    networks:
-      - proxy
-      - internal
+      database: {condition: service_healthy}
+      cache: {condition: service_healthy}
+    networks: [proxy, internal]
     volumes:
       - /srv/nextcloud/html:/var/www/html
       - /srv/nextcloud/data:/var/www/html/data
-      - /srv/media/music:/media/music
-      - /srv/media/audiobooks:/media/audiobooks
-      - /srv/media/podcasts:/media/podcasts
-      - /srv/media/movies:/media/movies
-      - /srv/media/tv:/media/tv
-    env_file:
-      - .env
+      - /srv/media:/media
     environment:
-      MYSQL_HOST: nextcloud-db
+      MYSQL_HOST: database
       MYSQL_DATABASE: nextcloud
       MYSQL_USER: nextcloud
-      REDIS_HOST: nextcloud-redis
-      TRUSTED_PROXIES: ${NEXTCLOUD_TRUSTED_PROXIES:-172.16.0.0/12}
-      OVERWRITEPROTOCOL: ${NEXTCLOUD_OVERWRITE_PROTOCOL:-https}
-      OVERWRITEHOST: ${NEXTCLOUD_OVERWRITE_HOST:-}
-      OVERWRITECLIURL: ${NEXTCLOUD_OVERWRITE_CLI_URL:-}
+      MYSQL_PASSWORD: ${NEXTCLOUD_DB_PASSWORD}
+      REDIS_HOST: cache
+      NEXTCLOUD_ADMIN_USER: ${ADMIN_USER}
+      NEXTCLOUD_ADMIN_PASSWORD: ${NEXTCLOUD_ADMIN_PASSWORD}
+      NEXTCLOUD_TRUSTED_DOMAINS: nc.${ROOT_DOMAIN}
+      TRUSTED_PROXIES: 172.16.0.0/12
+      OVERWRITEPROTOCOL: https
+      OVERWRITEHOST: nc.${ROOT_DOMAIN}
+      OVERWRITECLIURL: https://nc.${ROOT_DOMAIN}
+      PHP_MEMORY_LIMIT: 1G
+      PHP_UPLOAD_LIMIT: 10G
 
 networks:
-  proxy:
-    external: true
-  internal:
-    driver: bridge
+  proxy: {external: true}
+  internal: {internal: true}

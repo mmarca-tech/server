@@ -1,17 +1,16 @@
 services:
   calibre-web:
-    image: ${CALIBRE_WEB_IMAGE}
+    image: ${CALIBRE_IMAGE}
     restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    networks:
-      - proxy
-    env_file:
-      - .env
+    security_opt: [no-new-privileges:true]
+    networks: [proxy]
     volumes:
       - /srv/calibre/config:/config
       - /srv/media/books:/books
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
 
 networks:
-  proxy:
-    external: true
+  proxy: {external: true}

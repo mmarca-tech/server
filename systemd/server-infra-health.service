@@ -1,0 +1,10 @@
+[Unit]
+Description=Server infrastructure health report
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/srv/server/scripts/verify.sh --runtime
+StandardOutput=append:/var/log/server-infra/health.log
+StandardError=append:/var/log/server-infra/health.log
+

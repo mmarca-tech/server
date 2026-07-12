@@ -1,18 +1,12 @@
 services:
   flaresolverr:
-    image: ghcr.io/flaresolverr/flaresolverr:latest
-    container_name: flaresolverr
+    image: ${FLARESOLVERR_IMAGE}
     restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    networks:
-      - home-network
-    ports:
-      - "8191:8191"
+    security_opt: [no-new-privileges:true]
+    networks: [home-network]
     environment:
-      - TZ=Europe/Tallinn
-      - LOG_LEVEL=info
+      LOG_LEVEL: info
+      TZ: ${TZ}
 
 networks:
-  home-network:
-    external: true
+  home-network: {external: true}

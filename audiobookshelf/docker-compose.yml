@@ -2,20 +2,15 @@ services:
   audiobookshelf:
     image: ${AUDIOBOOKSHELF_IMAGE}
     restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    networks:
-      - proxy
-    env_file:
-      - .env
-    environment:
-      TZ: ${TZ:-UTC}
+    security_opt: [no-new-privileges:true]
+    networks: [proxy]
     volumes:
       - /srv/audiobookshelf/config:/config
       - /srv/audiobookshelf/metadata:/metadata
       - /srv/media/audiobooks:/audiobooks:ro
       - /srv/media/podcasts:/podcasts:ro
+    environment:
+      TZ: ${TZ}
 
 networks:
-  proxy:
-    external: true
+  proxy: {external: true}

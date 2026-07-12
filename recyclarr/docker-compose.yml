@@ -1,17 +1,21 @@
 services:
   recyclarr:
-    image: ghcr.io/recyclarr/recyclarr:latest
-    container_name: recyclarr
+    image: ${RECYCLARR_IMAGE}
+    user: ${PUID}:${PGID}
     restart: unless-stopped
-    networks:
-      - home-network
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    networks: [home-network]
     volumes:
       - /srv/recyclarr/config:/config
+      - /srv/recyclarr/data:/data
     environment:
-      - TZ=Europe/Tallinn
-      # Runs sync automatically on schedule defined in recyclarr.yml
-      # Manual sync: docker exec recyclarr recyclarr sync
+      TZ: ${TZ}
+      CRON_SCHEDULE: '@daily'
+      RECYCLARR_CREATE_CONFIG: 'true'
+      RECYCLARR_CONFIG_DIR: /config
+      RECYCLARR_DATA_DIR: /data
 
 networks:
-  home-network:
-    external: true
+  home-network: {external: true}

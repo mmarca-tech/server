@@ -2,15 +2,11 @@ services:
   homeassistant:
     image: ${HOMEASSISTANT_IMAGE}
     restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    network_mode: host
+    security_opt: [no-new-privileges:true]
+    ports:
+      - ${WG_PRIVATE_IP}:8123:8123
     volumes:
       - /srv/homeassistant/config:/config
       - /etc/localtime:/etc/localtime:ro
-      - /run/dbus:/run/dbus:ro
-      - /run/udev:/run/udev:ro
-    env_file:
-      - .env
     environment:
-      DBUS_SYSTEM_BUS_ADDRESS: unix:path=/run/dbus/system_bus_socket
+      TZ: ${TZ}

@@ -1,473 +1,103 @@
-# 🚀 Deployment & Replication Guide
+# Deployment Guide
 
-Complete guide to replicate this home server setup on a new machine.
+## 1. Prepare AlphaVPS and DNS
 
----
+Use a fresh Debian 12 x86_64 instance. The full profile is intended for a VPS
+with at least 8 dedicated vCPUs and roughly 16 GB RAM. AlphaVPS prohibits
+illegal content and sustained CPU/I/O-heavy use on plans without dedicated
+cores; the deployment requires explicit acknowledgements instead of assuming
+permission.
 
-## 📋 Prerequisites
+Create A records pointing to `PUBLIC_IPV4` for:
 
-### Hardware
-- **OS:** Debian 13 (or compatible Linux)
-- **Storage:** 500GB+ (for media)
-- **RAM:** 4GB minimum, 8GB+ recommended
-- **Network:** Static IP or reserved DHCP
+```text
+@ nc immich hometheater seerr calibre audiobookshelf n8n openproject auth
+```
 
-### Initial Setup
-1. Fresh Debian 13 installation
-2. SSH access configured
-3. User with sudo privileges (e.g., `manu`)
-4. Internet connectivity
-5. Domain with DNS access (for Caddy HTTPS)
+Do not create AAAA records unless the VPS IPv6 address is configured and
+declared in `PUBLIC_IPV6`. DNS is verified by preflight but is not modified.
 
----
-
-## 🚀 Quick Start (Automated)
+## 2. Create the root-only configuration
 
 ```bash
-# 1. Clone this repository
-git clone <your-repo> /srv/server
-cd /srv/server
-
-# 2. Run the master deployment script
-sudo ./scripts/deploy-all.sh
-
-# 3. Follow prompts for:
-#    - Domain name
-#    - Let's Encrypt email
-#    - VPN settings (optional)
-#    - User configuration
+sudo install -m 0600 config/deploy.env.example /root/server.env
+sudoedit /root/server.env
 ```
 
----
+Replace every placeholder. Rotate the ProtonVPN WireGuard credential that was
+previously committed. Generate the Authelia password hash using a trusted
+Authelia installation and put only the hash in the configuration.
 
-## 📖 Step-by-Step Manual Setup
+For the full profile, set both acknowledgements to `true`. Set
+`ALLOW_LOW_RESOURCES=true` only when consciously overriding the capacity gate.
 
-### Step 1: System Preparation
+## 3. Preflight and deploy
 
 ```bash
-# Update system
-sudo apt update && sudo apt upgrade -y
-
-# Install prerequisites
-sudo apt install -y curl wget git nano htop tmux
-
-# Create service user (optional, for isolation)
-sudo useradd -m -s /bin/bash openclaw || true
+sudo DEPLOY_CONFIG=/root/server.env ./scripts/deploy.sh --check
+sudo DEPLOY_CONFIG=/root/server.env ./scripts/deploy.sh
 ```
 
-### Step 2: Install Docker & Docker Compose
+The command performs these ordered stages:
+
+1. Validate OS, architecture, configuration permissions, DNS, resources,
+   credentials, and ports.
+2. Update Debian and install security, WireGuard, and monitoring packages.
+3. Install Docker Engine, Buildx, and Compose from Docker's Debian repository.
+4. Create the administrator, enforce key-only SSH, and enable fail2ban.
+5. Generate WireGuard server/client keys and enable the private network.
+6. Enable UFW and the Docker forwarding policy.
+7. Generate root-only service secrets and persistent `/srv` directories.
+8. Render every Compose project and validate Caddy.
+9. Build/start the selected stacks, wait for health, and install monitoring.
+10. Run runtime exposure and health verification.
+
+Completed stages are recorded in `/var/lib/server-infra/deploy.state`. To
+continue an interrupted deployment without rerunning successful stages:
 
 ```bash
-# Use the automated script
-./scripts/install-docker.sh
-
-# Or manually:
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-sudo usermod -aG docker $USER
-newgrp docker
+sudo DEPLOY_CONFIG=/root/server.env ./scripts/deploy.sh --resume
 ```
 
-### Step 3: Prepare Storage
+## 4. Connect to private services
+
+From the administrator workstation, retrieve the generated client
+configuration securely:
 
 ```bash
-# Create media directory structure
-sudo mkdir -p /srv/media/{downloads,downloads/incomplete,movies,series,music,audiobooks,podcasts}
-sudo mkdir -p /srv/server
-
-# Set permissions
-sudo chown $USER:$USER /srv/server
-sudo chmod 755 /srv/media
+ssh serveradmin@PUBLIC_IPV4 'sudo cat /etc/server-infra/wireguard-admin.conf' > wireguard-admin.conf
+chmod 600 wireguard-admin.conf
 ```
 
-### Step 4: Clone Repository
-
-```bash
-cd /srv/server
-git clone <your-repo-url> .
-
-# Or if already in directory:
-git init
-git remote add origin <your-repo-url>
-git fetch origin
-git checkout -t origin/main
-```
-
-### Step 5: Configure Environment Files
-
-```bash
-# Edit each service's .env file
-nano proxy/.env          # ROOT_DOMAIN, ACME_EMAIL
-nano nextcloud/.env      # DB passwords, secrets
-nano immich/.env         # DB passwords
-# ... repeat for other services
-```
-
-**Key variables to set:**
-
-```bash
-# proxy/.env
-ROOT_DOMAIN=yourdomain.com
-ACME_EMAIL=your-email@example.com
-
-# nextcloud/.env
-MYSQL_PASSWORD=strong_password_here
-REDIS_PASSWORD=strong_password_here
-NEXTCLOUD_ADMIN_USER=admin
-NEXTCLOUD_ADMIN_PASSWORD=strong_password_here
-
-# immich/.env
-DB_PASSWORD=strong_password_here
-DB_USERNAME=immich
-REDIS_PASSWORD=strong_password_here
-```
-
-### Step 6: Start Services
-
-```bash
-# Create Docker network
-docker network create home-network
-
-# Start all services in order
-./scripts/start-all-services.sh
-
-# Or manually:
-cd proxy && docker compose up -d
-cd ../nextcloud && docker compose up -d
-cd ../immich && docker compose up -d
-# ... etc
-```
-
-### Step 7: Configure Caddy Reverse Proxy
-
-Update DNS records:
-
-```
-yourdomain.com    A  your.public.ip
-nc.yourdomain.com A  your.public.ip
-immich...         A  your.public.ip
-jellyfin...       A  your.public.ip
-# etc
-```
-
-Port forward on router:
-```
-80 → your-server:80
-443 → your-server:443
-```
-
-### Step 8: Install OpenClaw
-
-```bash
-./scripts/install-openclaw.sh
-
-# Configure
-sudo nano /etc/openclaw/openclaw.env
-
-# Start
-sudo systemctl start openclaw-gateway
-sudo systemctl enable openclaw-gateway
-```
-
-### Step 9: Set Up Monitoring & Automation
-
-```bash
-# Add cron jobs
-sudo crontab -e
-
-# Paste from scripts/crontab-jobs.txt
-```
-
-### Step 10: Verify Everything
-
-```bash
-# Check all containers
-docker ps -a
-
-# Check OpenClaw
-systemctl status openclaw-gateway
-
-# Test Caddy
-curl -I https://yourdomain.com
-
-# Dashboard
-./scripts/dashboard-visual.sh
-```
-
----
-
-## 📂 Directory Structure
-
-After deployment, you'll have:
-
-```
-/srv/
-├── server/                    # This repository
-│   ├── proxy/                # Caddy reverse proxy
-│   ├── nextcloud/            # Nextcloud + DB + Redis
-│   ├── immich/               # Photo library
-│   ├── jellyfin/             # Video streaming
-│   ├── jellyseerr/           # Request manager
-│   ├── navidrome/            # Music streaming
-│   ├── calibre/              # E-book management
-│   ├── audiobookshelf/       # Audiobook streaming
-│   ├── ha/                   # Home Assistant
-│   ├── adguard/              # DNS + ad-blocking
-│   ├── transmission/         # Torrent client (VPN via gluetun/ProtonVPN)
-│   ├── sonarr/              # TV show automation
-│   ├── radarr/              # Movie automation
-│   ├── prowlarr/            # Indexer manager
-│   ├── flaresolverr/       # Cloudflare bypass for Prowlarr
-│   ├── bazarr/             # Automatic subtitles
-│   ├── tdarr/              # Media transcoding
-│   ├── recyclarr/          # TRaSH quality profiles
-│   ├── mollysocket/          # Signal relay
-│   ├── scripts/              # Automation & helper scripts
-│   └── DEPLOYMENT.md         # This file
-│
-└── media/                     # Shared media storage
-    ├── downloads/            # Transmission downloads
-    │   ├── incomplete/      # In-progress downloads
-    │   ├── radarr/          # Radarr category (auto-created)
-    │   └── sonarr/          # Sonarr category (auto-created)
-    ├── movies/              # Jellyfin movie library
-    ├── series/              # Jellyfin series library
-    ├── music/               # Navidrome + Jellyfin music
-    ├── audiobooks/          # Audiobookshelf + Jellyfin audiobooks
-    └── podcasts/            # Podcast storage
-```
-
----
-
-## 🔧 Available Scripts
-
-### Automated Deployment
-
-```bash
-./scripts/deploy-all.sh              # Full automated setup
-./scripts/install-docker.sh          # Docker installation
-./scripts/install-openclaw.sh        # OpenClaw setup
-./scripts/start-all-services.sh      # Start all containers
-./scripts/stop-all-services.sh       # Stop all containers
-./scripts/backup-all-services.sh     # Backup all data
-```
-
-### Monitoring & Management
-
-```bash
-./scripts/dashboard-visual.sh        # Visual status dashboard
-./scripts/docker-maintenance.sh      # Docker health check
-./scripts/docker-check-updates.sh    # Image update check
-./scripts/caddy-cert-monitor.sh      # SSL certificate check
-./scripts/ha-integration.sh          # Home Assistant status
-./scripts/media-library-mgmt.sh      # Media service status
-./scripts/generate-monitoring-report.sh  # Daily report
-```
-
-### Utilities
-
-```bash
-./scripts/git-auto-commit.sh "message"  # Git commit & push
-./scripts/logs.sh <service>             # View service logs
-```
-
----
-
-## 📦 Backup & Restore
-
-### Create Backup
-
-```bash
-./scripts/backup-all-services.sh
-
-# Creates timestamped backup:
-# /srv/backups/backup-2026-03-05-120000.tar.gz
-```
-
-### Restore from Backup
-
-```bash
-./scripts/restore-backup.sh /path/to/backup.tar.gz
-```
-
----
-
-## 🔐 Security Hardening
-
-After deployment, run:
-
-```bash
-# Security audit
-openclaw security audit --deep
-
-# Enable automatic updates
-sudo apt install unattended-upgrades
-
-# Harden firewall
-sudo ufw enable
-sudo ufw allow from 192.168.1.0/24 to any port 22 proto tcp
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-```
-
----
-
-## 🚨 Troubleshooting
-
-### Services won't start
-
-```bash
-# Check Docker
-docker ps -a
-docker logs <container-name>
-
-# Check disk space
-df -h
-du -sh /srv/*
-
-# Check permissions
-ls -la /srv/server/*/config/
-```
-
-### Caddy not getting certificates
-
-```bash
-# Check logs
-docker logs caddy_fresh-caddy-1
-
-# Verify DNS
-nslookup yourdomain.com
-
-# Check port forwarding
-curl -I http://your-public-ip
-```
-
-### Database errors
-
-```bash
-# Restart database
-docker restart nextcloud_fresh-nextcloud-db-1
-
-# Check disk space
-df -h /srv/
-
-# View database logs
-docker logs nextcloud_fresh-nextcloud-db-1
-```
-
-### OpenClaw not connecting
-
-```bash
-# Check service status
-systemctl status openclaw-gateway
-
-# Check logs
-journalctl -u openclaw-gateway.service -n 50
-
-# Verify credentials
-ls -la ~/.openclaw/credentials/
-```
-
----
-
-## 📊 Performance Tuning
-
-### Docker Limits
-
-Edit service `docker-compose.yml`:
-
-```yaml
-services:
-  service-name:
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 2G
-        reservations:
-          cpus: '1'
-          memory: 1G
-```
-
-### Database Optimization
-
-```bash
-# Nextcloud database tuning
-docker exec nextcloud_fresh-nextcloud-db-1 mysql-optimize
-
-# Immich database tuning
-docker exec immich_fresh-immich-db-1 psql-optimize
-```
-
----
-
-## 🔄 Upgrades & Updates
-
-### Update All Images
-
-```bash
-cd /srv/server
-
-# Pull latest images
-./scripts/pull-all-images.sh
-
-# Restart services
-./scripts/restart-all-services.sh
-
-# Verify
-./scripts/dashboard-visual.sh
-```
-
-### Update OpenClaw
-
-```bash
-sudo openclaw update status
-npm update -g openclaw
-sudo systemctl restart openclaw-gateway
-```
-
----
-
-## 📞 Support & Documentation
-
-- [INFRASTRUCTURE.md](INFRASTRUCTURE.md) — System architecture
-- [SERVICES.md](SERVICES.md) — Service-specific docs
-- [OPENCLAW_AUTOMATION.md](OPENCLAW_AUTOMATION.md) — Automation guide
-- [DASHBOARD.md](DASHBOARD.md) — Dashboard usage
-- [QUICK_REFERENCE.md](QUICK_REFERENCE.md) — Common commands
-
----
-
-## 📝 Notes
-
-- **First deployment:** Allow 30-60 minutes for full setup
-- **DNS propagation:** May take 5-30 minutes for Let's Encrypt validation
-- **Database initialization:** First startup of databases may take 2-5 minutes
-- **Media indexing:** First scan of large libraries can take hours (Jellyfin, Immich, Navidrome)
-
----
-
-## 🚀 Next Steps After Deployment
-
-1. Access web UIs:
-   - Nextcloud: https://nc.yourdomain.com
-   - Jellyfin: https://jellyfin.yourdomain.com
-   - Immich: https://immich.yourdomain.com
-   - Transmission: https://transmission.yourdomain.com
-
-2. Configure each service
-
-3. Install mobile apps and test sync
-
-4. Set up monitoring alerts
-
-5. Schedule regular backups
-
-6. Review security audit logs
-
----
-
-## 📌 Version History
-
-- **2026-03-05** — Initial deployment guide created
-
+Replace the username/client filename if configured differently, then import it
+into a WireGuard client. Private service URLs use `10.66.0.1` by
+default; see [SERVICES.md](SERVICES.md). The client configuration routes only
+the administration subnet, not general internet traffic.
+
+## 5. Recovery
+
+- SSH remains public, key-only, and fail2ban-protected to avoid a VPN lockout.
+- If a stack fails, inspect it with `scripts/stack.sh logs STACK` and rerun
+  deployment with `--resume` after correcting the cause.
+- If the firewall service fails, use the AlphaVPS console, run `ufw disable`,
+  correct `/etc/server-infra/deploy.env`, and rerun the firewall service.
+- Generated application passwords are in `/etc/server-infra/secrets.env` with
+  root-only permissions.
+- Backups are created under `/srv/backups` with `scripts/stack.sh backup`.
+- The built-in backup captures configuration, application state, and logical
+  database dumps. Large `/srv/media` libraries require separate off-site or
+  snapshot-based backup coverage. It briefly stops application containers,
+  keeps only database containers online for logical dumps, then restores the
+  full stack before returning.
+- Restore a verified backup with
+  `scripts/stack.sh restore /srv/backups/server-infra-TIMESTAMP --confirm`.
+  The command stops the stack, verifies checksums, restores application files
+  and logical databases, restarts services, and runs runtime verification.
+
+## Upstream references
+
+- [Docker Engine on Debian](https://docs.docker.com/engine/install/debian/)
+- [Docker packet filtering](https://docs.docker.com/engine/network/firewall-iptables/)
+- [AlphaVPS terms](https://alphavps.com/terms)
+- [Immich Compose installation](https://docs.immich.app/install/docker-compose/)
+- [Seerr migration and official image](https://docs.seerr.dev/migration-guide/)

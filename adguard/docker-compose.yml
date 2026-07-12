@@ -2,13 +2,13 @@ services:
   adguard:
     image: ${ADGUARD_IMAGE}
     restart: unless-stopped
-    network_mode: host
-    security_opt:
-      - no-new-privileges:true
-    env_file:
-      - .env
-    environment:
-      TZ: ${TZ:-UTC}
+    security_opt: [no-new-privileges:true]
+    ports:
+      - ${WG_PRIVATE_IP}:53:53/tcp
+      - ${WG_PRIVATE_IP}:53:53/udp
+      - ${WG_PRIVATE_IP}:${ADGUARD_ADMIN_PORT:-3001}:3000/tcp
     volumes:
       - /srv/adguard/work:/opt/adguardhome/work
       - /srv/adguard/conf:/opt/adguardhome/conf
+    environment:
+      TZ: ${TZ}

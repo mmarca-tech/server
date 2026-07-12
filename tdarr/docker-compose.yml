@@ -1,31 +1,25 @@
 services:
   tdarr:
-    image: ghcr.io/haveagitgat/tdarr:latest
-    container_name: tdarr
+    image: ${TDARR_IMAGE}
     restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    networks:
-      - home-network
+    security_opt: [no-new-privileges:true]
+    networks: [home-network]
     ports:
-      - "8265:8265"   # Web UI
-      - "8266:8266"   # Server port
+      - ${WG_PRIVATE_IP}:8265:8265
+      - ${WG_PRIVATE_IP}:8266:8266
     volumes:
       - /srv/tdarr/server:/app/server
       - /srv/tdarr/configs:/app/configs
       - /srv/tdarr/logs:/app/logs
-      - /srv/media:/media
       - /srv/tdarr/transcode_cache:/temp
+      - /srv/media:/media
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/Tallinn
-      - serverIP=0.0.0.0
-      - serverPort=8266
-      - webUIPort=8265
-      - internalNode=true
-      - inContainer=true
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      serverIP: 0.0.0.0
+      serverPort: 8266
+      webUIPort: 8265
 
 networks:
-  home-network:
-    external: true
+  home-network: {external: true}

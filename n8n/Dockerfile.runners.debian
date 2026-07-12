@@ -1,50 +1,13 @@
-FROM n8nio/runners:latest AS stock
-FROM node:24-bookworm-slim AS nodebase
-FROM python:3.13-slim-bookworm
+ARG N8N_RUNNERS_IMAGE
+FROM ${N8N_RUNNERS_IMAGE}
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    tini \
-    ca-certificates \
-    libstdc++6 \
-    curl && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN useradd --create-home --home-dir /home/runner --shell /bin/bash runner
-
-COPY --from=nodebase /usr/local/bin/node /usr/local/bin/node
-COPY --from=stock /usr/local/bin/task-runner-launcher /usr/local/bin/task-runner-launcher
-COPY --from=stock /usr/lib/libucontext.so.1 /usr/lib/libucontext.so.1
-COPY --from=stock /usr/lib/libobstack.so.1 /usr/lib/libobstack.so.1
-
-COPY --from=stock /opt/runners/task-runner-javascript /opt/runners/task-runner-javascript
-COPY --from=stock /opt/runners/task-runner-python/build/lib/src /opt/runners/task-runner-python/src
-COPY --from=stock /opt/runners/task-runner-python/pyproject.toml /opt/runners/task-runner-python/pyproject.toml
-COPY --from=stock /opt/runners/task-runner-python/README.md /opt/runners/task-runner-python/README.md
-COPY runner-patches/task_executor.py /opt/runners/task-runner-python/src/task_executor.py
-# OPENCLAW_UNIQUE_TAG: dockerfile-marker-2026-05-08T12-15-EEST
-COPY runner-patches/task_analyzer.py /opt/runners/task-runner-python/src/task_analyzer.py
-COPY runner-patches/constants.py /opt/runners/task-runner-python/src/constants.py
-
-RUN python -m venv /opt/runners/task-runner-python/.venv && \
-    /opt/runners/task-runner-python/.venv/bin/pip install --no-cache-dir --upgrade pip && \
-    /opt/runners/task-runner-python/.venv/bin/pip install --no-cache-dir /opt/runners/task-runner-python && \
-    /opt/runners/task-runner-python/.venv/bin/pip install --no-cache-dir \
-      pandas \
-      numpy \
-      plotly \
-      anthropic \
-      requests \
-      playwright \
-      scipy \
-      twelvedata
+USER root
+WORKDIR /opt/runners/task-runner-python
+COPY runner-requirements.txt /tmp/runner-requirements.txt
+RUN uv pip install --requirement /tmp/runner-requirements.txt
 
 COPY n8n-task-runners.json /etc/n8n-task-runners.json
-
-RUN chown -R runner:runner /home/runner /opt/runners /etc/n8n-task-runners.json
+RUN chown runner:runner /etc/n8n-task-runners.json
 
 USER runner
-ENTRYPOINT ["tini", "--", "/usr/local/bin/task-runner-launcher"]
-CMD ["javascript", "python"]
+WORKDIR /home/runner
