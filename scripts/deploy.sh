@@ -28,7 +28,8 @@ preflight() {
   local key value mode_bits cpus memory_kb
   SSH_PORT="${SSH_PORT:-22}"
   ADGUARD_ADMIN_PORT="${ADGUARD_ADMIN_PORT:-3001}"
-  export SSH_PORT ADGUARD_ADMIN_PORT
+  GITEA_SSH_PORT="${GITEA_SSH_PORT:-2222}"
+  export SSH_PORT ADGUARD_ADMIN_PORT GITEA_SSH_PORT
   for key in "${required[@]}"; do
     value="${!key:-}"
     is_placeholder "$value" && die "$key is missing or still a placeholder"
@@ -38,6 +39,8 @@ preflight() {
   # shellcheck disable=SC2016
   [[ "$AUTHELIA_ADMIN_PASSWORD_HASH" == '$argon2id$'* ]] || die "AUTHELIA_ADMIN_PASSWORD_HASH must be an Argon2id hash"
   is_placeholder "${WOODPECKER_AGENT_SECRET:-}" && die "Set WOODPECKER_AGENT_SECRET (Codeberg CI agent secret)"
+  is_placeholder "${GITEA_DOMAIN:-}" && die "Set GITEA_DOMAIN (for example git.mmarca.tech)"
+  { [[ "$GITEA_DOMAIN" =~ ^[a-z0-9][a-z0-9.-]*\.[a-z]{2,}$ ]] && [[ "$GITEA_DOMAIN" != *.example.com ]]; } || die "GITEA_DOMAIN is invalid or still the example value"
   [[ "$ROOT_DOMAIN" =~ ^[a-z0-9][a-z0-9.-]*\.[a-z]{2,}$ ]] || die "ROOT_DOMAIN is invalid"
   [[ "$ACME_EMAIL" =~ ^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$ ]] || die "ACME_EMAIL is invalid"
   [[ "$ADMIN_EMAIL" =~ ^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$ ]] || die "ADMIN_EMAIL is invalid"
@@ -47,6 +50,12 @@ preflight() {
   if [[ ! "$SSH_PORT" =~ ^[0-9]+$ ]] || ((SSH_PORT < 1 || SSH_PORT > 65535)); then die "SSH_PORT is invalid"; fi
   if [[ ! "$WG_PORT" =~ ^[0-9]+$ ]] || ((WG_PORT < 1 || WG_PORT > 65535)); then die "WG_PORT is invalid"; fi
   if [[ ! "$ADGUARD_ADMIN_PORT" =~ ^[0-9]+$ ]] || ((ADGUARD_ADMIN_PORT < 1 || ADGUARD_ADMIN_PORT > 65535)); then die "ADGUARD_ADMIN_PORT is invalid"; fi
+  if [[ ! "$GITEA_SSH_PORT" =~ ^[0-9]+$ ]] || ((GITEA_SSH_PORT < 1 || GITEA_SSH_PORT > 65535)); then die "GITEA_SSH_PORT is invalid"; fi
+  case "$GITEA_SSH_PORT" in
+    "$SSH_PORT" | 80 | 443 | "$WG_PORT" | "$ADGUARD_ADMIN_PORT")
+      die "GITEA_SSH_PORT conflicts with another listener"
+      ;;
+  esac
   [[ "$SSH_PORT" != 80 && "$SSH_PORT" != 443 ]] || die "SSH_PORT conflicts with Caddy"
   [[ "$WG_PORT" != 53 && "$WG_PORT" != 443 ]] || die "WG_PORT conflicts with another UDP listener"
   case "$ADGUARD_ADMIN_PORT" in
@@ -101,7 +110,7 @@ preflight() {
     done < <(public_hosts)
   fi
   if command -v ss >/dev/null 2>&1 && [[ ! -f /var/lib/server-infra/deploy.state ]]; then
-    for port in "${SSH_PORT:-22}" 80 443 "${WG_PORT}"; do
+    for port in "${SSH_PORT:-22}" 80 443 "${WG_PORT}" "${GITEA_SSH_PORT:-2222}"; do
       if ss -lntupH | awk '{print $5}' | grep -Eq ":${port}$"; then
         [[ "$port" == "${SSH_PORT:-22}" ]] || die "Required port is already in use: $port"
       fi
@@ -205,9 +214,11 @@ install_firewall() {
   ufw allow 443/tcp comment 'HTTPS'
   ufw allow 443/udp comment 'HTTP3'
   ufw allow "${WG_PORT}/udp" comment 'private administration'
+  ufw allow "${GITEA_SSH_PORT:-2222}/tcp" comment 'Gitea git SSH'
   ufw --force enable
   install -m 0755 "$SCRIPT_DIR/docker-firewall.sh" /usr/local/sbin/server-infra-docker-firewall
-  install -m 0644 "$REPO_ROOT/systemd/server-infra-docker-firewall.service" /etc/systemd/system/server-infra-docker-firewall.service
+  sed "s/__GITEA_SSH_PORT__/${GITEA_SSH_PORT:-2222}/" "$REPO_ROOT/systemd/server-infra-docker-firewall.service" >/etc/systemd/system/server-infra-docker-firewall.service
+  chmod 0644 /etc/systemd/system/server-infra-docker-firewall.service
   systemctl daemon-reload
   systemctl enable server-infra-docker-firewall.service
   systemctl restart server-infra-docker-firewall.service
@@ -228,7 +239,7 @@ prepare_runtime() {
     grep -q "^${key}=" "$SECRETS_FILE" || printf '%s=%s\n' "$key" "$(openssl rand -hex "$bytes")" >>"$SECRETS_FILE"
   }
   local key
-  for key in NEXTCLOUD_DB_ROOT_PASSWORD NEXTCLOUD_DB_PASSWORD NEXTCLOUD_ADMIN_PASSWORD IMMICH_DB_PASSWORD AUTHELIA_SESSION_SECRET AUTHELIA_STORAGE_ENCRYPTION_KEY AUTHELIA_JWT_SECRET; do
+  for key in NEXTCLOUD_DB_ROOT_PASSWORD NEXTCLOUD_DB_PASSWORD NEXTCLOUD_ADMIN_PASSWORD IMMICH_DB_PASSWORD AUTHELIA_SESSION_SECRET AUTHELIA_STORAGE_ENCRYPTION_KEY AUTHELIA_JWT_SECRET GITEA_ADMIN_PASSWORD; do
     ensure_secret "$key"
   done
   chmod 600 "$SECRETS_FILE"
@@ -257,7 +268,7 @@ prepare_runtime() {
     rm -f "$users_database"
   fi
 
-  local dirs=(proxy/caddy-data proxy/caddy-config media media/movies media/tv media/music media/audiobooks media/podcasts media/books media/downloads media/downloads/incomplete media/immich/library nextcloud/html nextcloud/data immich/model-cache jellyfin/config jellyfin/cache seerr/config calibre/config audiobookshelf/config audiobookshelf/metadata authelia adguard/work adguard/conf mollysocket/data transmission/config gluetun prowlarr/config sonarr/config radarr/config lidarr/config bazarr/config tdarr/server tdarr/configs tdarr/logs tdarr/transcode_cache recyclarr/config recyclarr/data woodpecker databases/nextcloud-mariadb databases/immich-postgres backups)
+  local dirs=(proxy/caddy-data proxy/caddy-config media media/movies media/tv media/music media/audiobooks media/podcasts media/books media/downloads media/downloads/incomplete media/immich/library nextcloud/html nextcloud/data immich/model-cache jellyfin/config jellyfin/cache seerr/config calibre/config audiobookshelf/config audiobookshelf/metadata authelia adguard/work adguard/conf mollysocket/data transmission/config gluetun prowlarr/config sonarr/config radarr/config lidarr/config bazarr/config tdarr/server tdarr/configs tdarr/logs tdarr/transcode_cache recyclarr/config recyclarr/data gitea/data gitea/act-runner woodpecker databases/nextcloud-mariadb databases/immich-postgres backups)
   local dir
   for dir in "${dirs[@]}"; do install -d -m 0750 -o "$ADMIN_USER" -g "$ADMIN_USER" "/srv/$dir"; done
   docker network inspect proxy >/dev/null 2>&1 || docker network create proxy >/dev/null
@@ -271,7 +282,7 @@ validate_configs() {
   while IFS= read -r stack; do
     compose "$stack" config --quiet
   done < <(selected_stacks)
-  docker run --rm --network none -e ROOT_DOMAIN -e ACME_EMAIL -v "$REPO_ROOT/proxy/Caddyfile:/etc/caddy/Caddyfile:ro" "$CADDY_IMAGE" caddy validate --config /etc/caddy/Caddyfile
+  docker run --rm --network none -e ROOT_DOMAIN -e GITEA_DOMAIN -e ACME_EMAIL -v "$REPO_ROOT/proxy/Caddyfile:/etc/caddy/Caddyfile:ro" "$CADDY_IMAGE" caddy validate --config /etc/caddy/Caddyfile
 }
 
 configure_mollysocket() {
@@ -281,6 +292,25 @@ configure_mollysocket() {
     vapid_key="$(docker run --rm "$MOLLYSOCKET_IMAGE" vapid generate | tail -n 1)"
     [[ "$vapid_key" =~ ^[A-Za-z0-9_-]{40,}$ ]] || die "MollySocket VAPID generation failed"
     printf 'MOLLY_VAPID_PRIVKEY=%s\n' "$vapid_key" >>"$SECRETS_FILE"
+    chmod 600 "$SECRETS_FILE"
+  fi
+}
+
+configure_gitea() {
+  # Bring up only Gitea (not the runner) so it initialises its database, then
+  # create the admin account and mint a runner registration token. The runner
+  # picks the token up from the secrets file when the full stack starts.
+  compose gitea up -d --wait --wait-timeout 180 gitea
+  local gitea_cli=(compose gitea exec -T -u git gitea gitea --config /data/gitea/conf/app.ini)
+  if ! "${gitea_cli[@]}" admin user list | grep -qw "$ADMIN_USER"; then
+    "${gitea_cli[@]}" admin user create --admin --username "$ADMIN_USER" \
+      --email "$ADMIN_EMAIL" --password "$GITEA_ADMIN_PASSWORD" --must-change-password=false
+  fi
+  if ! grep -q '^GITEA_RUNNER_REGISTRATION_TOKEN=' "$SECRETS_FILE"; then
+    local token
+    token="$("${gitea_cli[@]}" actions generate-runner-token | tr -d '[:space:]')"
+    [[ "$token" =~ ^[A-Za-z0-9]{40}$ ]] || die "Gitea runner token generation failed"
+    printf 'GITEA_RUNNER_REGISTRATION_TOKEN=%s\n' "$token" >>"$SECRETS_FILE"
     chmod 600 "$SECRETS_FILE"
   fi
 }
@@ -327,6 +357,7 @@ run_stage runtime prepare_runtime
 run_stage molly-secret configure_mollysocket
 run_stage images "$SCRIPT_DIR/stack.sh" pull
 run_stage validate validate_configs
+run_stage gitea-bootstrap configure_gitea
 run_stage services deploy_stacks
 run_stage monitoring install_monitoring
 run_stage verify "$SCRIPT_DIR/verify.sh" --runtime

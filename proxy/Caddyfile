@@ -51,6 +51,11 @@ auth.{$ROOT_DOMAIN} {
 	reverse_proxy authelia:9091
 }
 
+{$GITEA_DOMAIN} {
+	import secure_headers
+	reverse_proxy gitea:3000
+}
+
 {$ROOT_DOMAIN} {
 	import secure_headers
 	respond "Server infrastructure is online." 200

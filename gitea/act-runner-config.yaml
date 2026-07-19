@@ -1,0 +1,22 @@
+# Gitea Actions runner configuration. See:
+# https://docs.gitea.com/usage/actions/act-runner
+log:
+  level: info
+
+runner:
+  # Parallel jobs this runner accepts. Raise carefully on a shared VPS.
+  capacity: 2
+  timeout: 3h
+  # "<gitea label>:docker://<image>" maps a runs-on label to the image a job
+  # executes in. These mirror the common GitHub-style labels.
+  labels:
+    - "ubuntu-latest:docker://node:20-bookworm"
+    - "ubuntu-22.04:docker://node:20-bookworm"
+
+container:
+  # Attach job containers to this stack's compose network so they resolve the
+  # "gitea" service (GITEA_INSTANCE_URL) while still reaching the internet.
+  # Name is "<project>_<network>" and the project is fixed to server-gitea.
+  network: server-gitea_gitea
+  privileged: false
+  valid_volumes: []

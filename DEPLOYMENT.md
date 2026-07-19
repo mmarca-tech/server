@@ -14,6 +14,11 @@ Create A records pointing to `PUBLIC_IPV4` for:
 @ nc immich hometheater seerr calibre audiobookshelf auth
 ```
 
+Gitea is served on its own domain (`GITEA_DOMAIN`), so also create an A record
+for it — pointing at the same `PUBLIC_IPV4`. If it is under a different apex
+than `ROOT_DOMAIN` (for example `git.mmarca.tech`), create the record in that
+zone. Preflight verifies `GITEA_DOMAIN` resolves too.
+
 Do not create AAAA records unless the VPS IPv6 address is configured and
 declared in `PUBLIC_IPV6`. DNS is verified by preflight but is not modified.
 

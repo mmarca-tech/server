@@ -35,6 +35,9 @@ fi
 
 while IFS= read -r compose_file; do
   [[ "$compose_file" == "$ROOT/proxy/docker-compose.yml" ]] && continue
+  # gitea intentionally publishes the git SSH port; docker-firewall.sh and UFW
+  # open exactly that port and verify.sh allows it as a public listener.
+  [[ "$compose_file" == "$ROOT/gitea/docker-compose.yml" ]] && continue
   if rg -n "^\\s+- [\"']?[0-9]+:" "$compose_file"; then
     echo "Non-proxy stack has a wildcard host-port binding: $compose_file" >&2
     failed=1
@@ -79,7 +82,7 @@ while IFS= read -r compose_file; do
 done < <(find "$ROOT" -mindepth 2 -maxdepth 2 -name docker-compose.yml -print | sort)
 
 if docker info >/dev/null 2>&1; then
-  docker run --rm --network none -e ROOT_DOMAIN -e ACME_EMAIL -v "$ROOT/proxy/Caddyfile:/etc/caddy/Caddyfile:ro" "$CADDY_IMAGE" caddy validate --config /etc/caddy/Caddyfile || failed=1
+  docker run --rm --network none -e ROOT_DOMAIN -e GITEA_DOMAIN -e ACME_EMAIL -v "$ROOT/proxy/Caddyfile:/etc/caddy/Caddyfile:ro" "$CADDY_IMAGE" caddy validate --config /etc/caddy/Caddyfile || failed=1
 else
   echo "WARN: Docker daemon unavailable; Caddy runtime validation skipped"
 fi

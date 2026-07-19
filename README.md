@@ -27,7 +27,8 @@ services.
 - The configured SSH administrator has passwordless sudo; possession of that
   private SSH key is equivalent to root access and must be protected.
 - Public applications: Nextcloud, Immich, Jellyfin, Seerr, Calibre-Web,
-  Audiobookshelf, and Authelia through Caddy.
+  Audiobookshelf, and Authelia through Caddy, plus a self-hosted Gitea (with
+  Gitea Actions) on its own domain.
 - Private applications: media automation, AdGuard, and download administration
   through the WireGuard address.
 - Databases, caches, browser workers, and support containers are internal-only.

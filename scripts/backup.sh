@@ -33,10 +33,10 @@ while IFS= read -r -d '' database; do
   sqlite_backup="$destination/sqlite/$relative"
   mkdir -p "$(dirname "$sqlite_backup")"
   sqlite3 "$database" ".backup '$sqlite_backup'"
-done < <(find /srv/audiobookshelf /srv/authelia /srv/bazarr /srv/calibre /srv/jellyfin /srv/lidarr /srv/mollysocket /srv/prowlarr /srv/radarr /srv/seerr /srv/sonarr -type f \( -name '*.db' -o -name '*.sqlite' -o -name '*.sqlite3' \) -print0)
+done < <(find /srv/audiobookshelf /srv/authelia /srv/bazarr /srv/calibre /srv/gitea /srv/jellyfin /srv/lidarr /srv/mollysocket /srv/prowlarr /srv/radarr /srv/seerr /srv/sonarr -type f \( -name '*.db' -o -name '*.sqlite' -o -name '*.sqlite3' \) -print0)
 
 tar --xattrs --acls -C /srv -czf "$destination/persistent-data.tar.gz" \
-  adguard authelia audiobookshelf bazarr calibre gluetun jellyfin lidarr mollysocket nextcloud prowlarr proxy radarr recyclarr seerr sonarr tdarr transmission woodpecker
+  adguard authelia audiobookshelf bazarr calibre gitea gluetun jellyfin lidarr mollysocket nextcloud prowlarr proxy radarr recyclarr seerr sonarr tdarr transmission woodpecker
 sums_file="$(mktemp)"
 (
   cd "$destination"

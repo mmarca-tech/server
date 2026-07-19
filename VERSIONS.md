@@ -21,6 +21,7 @@ on 2026-07-12 against stable upstream releases and linux/amd64 manifests.
 | Bazarr / FlareSolverr | 1.6.0 / 3.5.0 |
 | Tdarr / Recyclarr | 2.83.01 / 8.6.0 |
 | Woodpecker agent | 3.16.0 |
+| Gitea / Act runner | 1.27.0 / 0.6.1 |
 
 Images without stable numbered container tags are referenced by repository plus
 immutable digest without a mutable alias. Update all coupled components

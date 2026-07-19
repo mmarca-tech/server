@@ -48,7 +48,7 @@ if $runtime; then
   if systemctl is-active --quiet wg-quick@wg0; then pass "WireGuard active"; else fail "WireGuard inactive"; fi
   if ufw status | grep -q '^Status: active'; then pass "UFW active"; else fail "UFW inactive"; fi
   ufw_rules="$(ufw status)"
-  for port in "${SSH_PORT:-22}/tcp" 80/tcp 443/tcp 443/udp "${WG_PORT}/udp"; do
+  for port in "${SSH_PORT:-22}/tcp" 80/tcp 443/tcp 443/udp "${WG_PORT}/udp" "${GITEA_SSH_PORT:-2222}/tcp"; do
     if echo "$ufw_rules" | grep -Fq "$port"; then pass "UFW permits $port"; else fail "UFW is missing $port"; fi
   done
   if iptables -C DOCKER-USER -i "$(ip route show default | awk 'NR==1 {print $5}')" -j DROP 2>/dev/null; then
@@ -59,7 +59,7 @@ if $runtime; then
   unhealthy="$(docker ps --filter health=unhealthy --format '{{.Names}}')"
   if [[ -z "$unhealthy" ]]; then pass "No unhealthy containers"; else fail "Unhealthy containers: $unhealthy"; fi
   public_listeners="$(ss -lntupH | awk '$5 ~ /0\.0\.0\.0:|\[::\]:|\*:/ {print $5}' | sort -u)"
-  if echo "$public_listeners" | grep -Ev ":(${SSH_PORT:-22}|80|443|${WG_PORT})$" | grep -q .; then
+  if echo "$public_listeners" | grep -Ev ":(${SSH_PORT:-22}|80|443|${WG_PORT}|${GITEA_SSH_PORT:-2222})$" | grep -q .; then
     fail "Unexpected public listeners: $public_listeners"
   else
     pass "Public listeners are restricted"

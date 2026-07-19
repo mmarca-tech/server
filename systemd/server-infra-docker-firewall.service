@@ -5,6 +5,7 @@ Requires=docker.service
 
 [Service]
 Type=oneshot
+Environment=GITEA_SSH_PORT=__GITEA_SSH_PORT__
 ExecStart=/usr/local/sbin/server-infra-docker-firewall
 RemainAfterExit=yes
 

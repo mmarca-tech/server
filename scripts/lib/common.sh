@@ -7,8 +7,8 @@ VERSION_FILE="${VERSION_FILE:-$REPO_ROOT/config/versions.env}"
 DEPLOY_CONFIG="${DEPLOY_CONFIG:-/etc/server-infra/deploy.env}"
 SECRETS_FILE="${SECRETS_FILE:-/etc/server-infra/secrets.env}"
 
-CORE_STACKS=(nextcloud immich jellyfin seerr calibre audiobookshelf authelia woodpecker proxy)
-FULL_STACKS=(nextcloud immich jellyfin seerr calibre audiobookshelf authelia mollysocket media-vpn sonarr radarr lidarr flaresolverr bazarr tdarr recyclarr adguard woodpecker proxy)
+CORE_STACKS=(nextcloud immich jellyfin seerr calibre audiobookshelf authelia gitea woodpecker proxy)
+FULL_STACKS=(nextcloud immich jellyfin seerr calibre audiobookshelf authelia mollysocket media-vpn sonarr radarr lidarr flaresolverr bazarr tdarr recyclarr adguard gitea woodpecker proxy)
 PUBLIC_SUBDOMAINS=(nc immich hometheater seerr calibre audiobookshelf auth)
 
 die() {
@@ -54,6 +54,8 @@ public_hosts() {
   for prefix in "${PUBLIC_SUBDOMAINS[@]}"; do
     printf '%s.%s\n' "$prefix" "$ROOT_DOMAIN"
   done
+  # Gitea is served on its own domain rather than a ROOT_DOMAIN subdomain.
+  [[ -n "${GITEA_DOMAIN:-}" ]] && printf '%s\n' "$GITEA_DOMAIN"
 }
 
 compose() {
