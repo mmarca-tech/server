@@ -14,7 +14,7 @@ services:
     environment:
       TZ: ${TZ}
       # Codeberg-hosted Woodpecker server: gRPC over TLS on port 443.
-      WOODPECKER_SERVER: ${WOODPECKER_SERVER:-ci.codeberg.org:443}
+      WOODPECKER_SERVER: ${WOODPECKER_SERVER:-grpc.ci.codeberg.org:443}
       WOODPECKER_GRPC_SECURE: ${WOODPECKER_GRPC_SECURE:-true}
       WOODPECKER_AGENT_SECRET: ${WOODPECKER_AGENT_SECRET}
       WOODPECKER_AGENT_CONFIG_FILE: /etc/woodpecker/agent.conf
