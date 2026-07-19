@@ -89,7 +89,9 @@ preflight() {
       resolved="$(getent ahostsv4 "$host" | awk 'NR==1 {print $1}' || true)"
       # shellcheck disable=SC2153
       [[ "$resolved" == "$PUBLIC_IPV4" ]] || die "$host does not resolve to PUBLIC_IPV4"
-      resolved6="$(getent ahostsv6 "$host" | awk 'NR==1 {print $1}' || true)"
+      # getent ahostsv6 returns IPv4-mapped addresses (::ffff:a.b.c.d) for
+      # A-only hosts; skip those so we only detect real AAAA records.
+      resolved6="$(getent ahostsv6 "$host" | awk '$1 !~ /^::ffff:/ {print $1; exit}' || true)"
       if [[ -n "${PUBLIC_IPV6:-}" ]]; then
         [[ "$resolved6" == "$PUBLIC_IPV6" ]] || die "$host does not resolve to PUBLIC_IPV6"
       else
