@@ -26,6 +26,9 @@ services:
       - /srv/mollysocket/data:/data
     entrypoint: [mollysocket]
     environment:
+      # Must match the server's DB so `connection add/list` act on the same
+      # data (required for air-gapped setup, where the CLI is the only way in).
+      MOLLY_DB: /data/ms.sqlite
       MOLLY_VAPID_PRIVKEY: ${MOLLY_VAPID_PRIVKEY}
 
 networks:
