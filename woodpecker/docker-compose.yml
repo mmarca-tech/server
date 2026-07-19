@@ -20,6 +20,20 @@ services:
       WOODPECKER_AGENT_CONFIG_FILE: /etc/woodpecker/agent.conf
       WOODPECKER_BACKEND: docker
       WOODPECKER_MAX_WORKFLOWS: ${WOODPECKER_MAX_WORKFLOWS:-2}
+      # A custom label so a workflow can pin itself to THIS agent. Adds to the
+      # built-in platform/hostname/backend/repo labels rather than replacing them.
+      # The android-app release/nightly pipeline filters on `runner=openvitals` to
+      # land here, where the persistent caches below live.
+      WOODPECKER_AGENT_LABELS: ${WOODPECKER_AGENT_LABELS:-runner=openvitals}
+      # Default volumes mounted into EVERY step container the agent spawns on the
+      # host daemon. ci-flutter.sh already prefers /woodpecker/cache/{gradle,pub}
+      # when those paths exist, so mounting persistent host dirs there turns on
+      # cross-pipeline pub + Gradle caching with no change to the pipeline steps --
+      # the single biggest cut to the nightly's build time and to the transient
+      # network failures, since packages and Gradle deps stop being re-downloaded
+      # every run. The dirs are created by deploy.sh; step containers run as root
+      # (docker backend) so they can write regardless of the dir owner.
+      WOODPECKER_BACKEND_DOCKER_VOLUMES: ${WOODPECKER_BACKEND_DOCKER_VOLUMES:-/srv/woodpecker-cache/gradle:/woodpecker/cache/gradle,/srv/woodpecker-cache/pub:/woodpecker/cache/pub}
 
 networks:
   woodpecker: {}
