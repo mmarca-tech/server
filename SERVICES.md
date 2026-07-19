@@ -11,20 +11,9 @@
 | Calibre-Web | `https://calibre.DOMAIN` | `/srv/calibre`, `/srv/media/books` |
 | Audiobookshelf | `https://audiobookshelf.DOMAIN` | `/srv/audiobookshelf`, `/srv/media` |
 | Authelia | `https://auth.DOMAIN` | `/srv/authelia` |
-| Gitea | `https://GITEA_DOMAIN` (its own domain) | `/srv/gitea` |
 
-Most public applications publish no backend port to the host; Caddy reaches
-them through the external `proxy` Docker network. The one exception is Gitea's
-git-over-SSH port (`GITEA_SSH_PORT`, default 2222) — the only non-Caddy public
-port — opened explicitly in UFW and the Docker ingress policy. Gitea's HTTP
-still flows through Caddy like every other app.
-
-Gitea is served on its own domain (`GITEA_DOMAIN`, e.g. `git.mmarca.tech`)
-rather than a `ROOT_DOMAIN` subdomain, so it needs a separate A record and gets
-its own certificate. Clone over `https://GITEA_DOMAIN/…` or
-`ssh://git@GITEA_DOMAIN:GITEA_SSH_PORT/…`. The admin user (matching
-`ADMIN_USER`) and its password are created on first deploy; the password is in
-`/etc/server-infra/secrets.env`.
+No public application publishes its backend port to the host. Caddy reaches it
+through the external `proxy` Docker network.
 
 ## WireGuard-only administration
 
@@ -54,13 +43,6 @@ internal at `http://flaresolverr:8191`.
 Application databases, Redis/Valkey, Immich machine learning, FlareSolverr,
 Recyclarr, and MollySocket have no public host binding. MollySocket remains
 air-gapped unless intentionally redesigned.
-
-The Gitea Actions runner (act_runner) is internal-only: it registers to Gitea
-over the internal Docker network and, like any CI runner, mounts the host Docker
-socket to run pipeline steps as sibling containers — root-equivalent host
-access. Its registration token is generated at deploy time into
-`/etc/server-infra/secrets.env`, and its identity persists in
-`/srv/gitea/act-runner`.
 
 The Woodpecker CI agent has no inbound exposure either: it opens an outbound
 gRPC/TLS connection to Codeberg's hosted server (`ci.codeberg.org:443`) and
