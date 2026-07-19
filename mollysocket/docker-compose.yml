@@ -15,6 +15,11 @@ services:
       MOLLY_WEBSERVER: "false"
       MOLLY_VAPID_PRIVKEY: ${MOLLY_VAPID_PRIVKEY}
       RUST_LOG: info
+    # The image's healthcheck probes the web server, which air-gapped mode
+    # (MOLLY_WEBSERVER=false) disables, so it can never pass. Disable it: the
+    # container is healthy in this mode, it just has no HTTP endpoint to poll.
+    healthcheck:
+      disable: true
 
   cli:
     image: ${MOLLYSOCKET_IMAGE}
