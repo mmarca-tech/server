@@ -304,7 +304,7 @@ run_stage() {
   local name="$1"
   shift
   if [[ -f "$state_file" ]] && grep -qx "$name" "$state_file"; then
-    if [[ "$name" == base-packages || "$name" == docker ]] || { [[ "$mode" == resume ]] && [[ "$name" == administrator || "$name" == wireguard || "$name" == firewall ]]; }; then
+    if [[ "$name" == base-packages || "$name" == docker || "$name" == images ]] || { [[ "$mode" == resume ]] && [[ "$name" == administrator || "$name" == wireguard || "$name" == firewall ]]; }; then
       echo "[SKIP] $name"
       return
     fi
