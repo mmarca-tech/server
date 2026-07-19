@@ -36,7 +36,7 @@ while IFS= read -r -d '' database; do
 done < <(find /srv/audiobookshelf /srv/authelia /srv/bazarr /srv/calibre /srv/jellyfin /srv/lidarr /srv/mollysocket /srv/prowlarr /srv/radarr /srv/seerr /srv/sonarr -type f \( -name '*.db' -o -name '*.sqlite' -o -name '*.sqlite3' \) -print0)
 
 tar --xattrs --acls -C /srv -czf "$destination/persistent-data.tar.gz" \
-  adguard authelia audiobookshelf bazarr calibre gluetun jellyfin lidarr mollysocket nextcloud prowlarr proxy radarr recyclarr seerr sonarr tdarr transmission woodpecker
+  adguard authelia audiobookshelf bazarr calibre gluetun jellyfin lidarr mollysocket nextcloud prowlarr proxy radarr recyclarr seerr sonarr tdarr transmission
 sums_file="$(mktemp)"
 (
   cd "$destination"

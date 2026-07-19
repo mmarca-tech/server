@@ -31,8 +31,6 @@ services.
 - Private applications: media automation, AdGuard, and download administration
   through the WireGuard address.
 - Databases, caches, browser workers, and support containers are internal-only.
-- A Woodpecker CI agent attaches outbound to Codeberg's hosted instance; it has
-  no inbound exposure but mounts the Docker socket to run pipeline steps.
 - Secrets are stored under `/etc/server-infra`, never in this repository.
 
 ## Documentation

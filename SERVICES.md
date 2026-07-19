@@ -43,10 +43,3 @@ internal at `http://flaresolverr:8191`.
 Application databases, Redis/Valkey, Immich machine learning, FlareSolverr,
 Recyclarr, and MollySocket have no public host binding. MollySocket remains
 air-gapped unless intentionally redesigned.
-
-The Woodpecker CI agent has no inbound exposure either: it opens an outbound
-gRPC/TLS connection to Codeberg's hosted server (`grpc.ci.codeberg.org:443`) and
-waits for pipeline work. It uses the Docker backend, so it mounts the host
-Docker socket and runs pipeline steps as sibling containers on the host daemon
-— effectively root-equivalent host access, the standard tradeoff for a
-self-hosted CI runner. Its agent ID persists in `/srv/woodpecker`.

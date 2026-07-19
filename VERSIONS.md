@@ -20,7 +20,6 @@ on 2026-07-12 against stable upstream releases and linux/amd64 manifests.
 | Prowlarr / Lidarr | 2.4.0.5397 / 3.1.0.4875 |
 | Bazarr / FlareSolverr | 1.6.0 / 3.5.0 |
 | Tdarr / Recyclarr | 2.83.01 / 8.6.0 |
-| Woodpecker agent | 3.16.0 |
 
 Images without stable numbered container tags are referenced by repository plus
 immutable digest without a mutable alias. Update all coupled components

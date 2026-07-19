@@ -37,7 +37,6 @@ preflight() {
   is_placeholder "${AUTHELIA_ADMIN_PASSWORD_HASH:-}" && die "Set AUTHELIA_ADMIN_PASSWORD_HASH"
   # shellcheck disable=SC2016
   [[ "$AUTHELIA_ADMIN_PASSWORD_HASH" == '$argon2id$'* ]] || die "AUTHELIA_ADMIN_PASSWORD_HASH must be an Argon2id hash"
-  is_placeholder "${WOODPECKER_AGENT_SECRET:-}" && die "Set WOODPECKER_AGENT_SECRET (Codeberg CI agent secret)"
   [[ "$ROOT_DOMAIN" =~ ^[a-z0-9][a-z0-9.-]*\.[a-z]{2,}$ ]] || die "ROOT_DOMAIN is invalid"
   [[ "$ACME_EMAIL" =~ ^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$ ]] || die "ACME_EMAIL is invalid"
   [[ "$ADMIN_EMAIL" =~ ^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$ ]] || die "ADMIN_EMAIL is invalid"
@@ -257,7 +256,7 @@ prepare_runtime() {
     rm -f "$users_database"
   fi
 
-  local dirs=(proxy/caddy-data proxy/caddy-config media media/movies media/tv media/music media/audiobooks media/podcasts media/books media/downloads media/downloads/incomplete media/immich/library nextcloud/html nextcloud/data immich/model-cache jellyfin/config jellyfin/cache seerr/config calibre/config audiobookshelf/config audiobookshelf/metadata authelia adguard/work adguard/conf mollysocket/data transmission/config gluetun prowlarr/config sonarr/config radarr/config lidarr/config bazarr/config tdarr/server tdarr/configs tdarr/logs tdarr/transcode_cache recyclarr/config recyclarr/data woodpecker woodpecker-cache/gradle woodpecker-cache/pub databases/nextcloud-mariadb databases/immich-postgres backups)
+  local dirs=(proxy/caddy-data proxy/caddy-config media media/movies media/tv media/music media/audiobooks media/podcasts media/books media/downloads media/downloads/incomplete media/immich/library nextcloud/html nextcloud/data immich/model-cache jellyfin/config jellyfin/cache seerr/config calibre/config audiobookshelf/config audiobookshelf/metadata authelia adguard/work adguard/conf mollysocket/data transmission/config gluetun prowlarr/config sonarr/config radarr/config lidarr/config bazarr/config tdarr/server tdarr/configs tdarr/logs tdarr/transcode_cache recyclarr/config recyclarr/data databases/nextcloud-mariadb databases/immich-postgres backups)
   local dir
   # Only create missing directories. Re-running install -d on an existing
   # directory rewrites its owner and mode, which clobbers data dirs owned by a

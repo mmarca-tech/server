@@ -7,8 +7,8 @@ VERSION_FILE="${VERSION_FILE:-$REPO_ROOT/config/versions.env}"
 DEPLOY_CONFIG="${DEPLOY_CONFIG:-/etc/server-infra/deploy.env}"
 SECRETS_FILE="${SECRETS_FILE:-/etc/server-infra/secrets.env}"
 
-CORE_STACKS=(nextcloud immich jellyfin seerr calibre audiobookshelf authelia woodpecker proxy)
-FULL_STACKS=(nextcloud immich jellyfin seerr calibre audiobookshelf authelia mollysocket media-vpn sonarr radarr lidarr flaresolverr bazarr tdarr recyclarr adguard woodpecker proxy)
+CORE_STACKS=(nextcloud immich jellyfin seerr calibre audiobookshelf authelia proxy)
+FULL_STACKS=(nextcloud immich jellyfin seerr calibre audiobookshelf authelia mollysocket media-vpn sonarr radarr lidarr flaresolverr bazarr tdarr recyclarr adguard proxy)
 PUBLIC_SUBDOMAINS=(nc immich hometheater seerr calibre audiobookshelf auth)
 
 die() {
