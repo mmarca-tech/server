@@ -259,7 +259,13 @@ prepare_runtime() {
 
   local dirs=(proxy/caddy-data proxy/caddy-config media media/movies media/tv media/music media/audiobooks media/podcasts media/books media/downloads media/downloads/incomplete media/immich/library nextcloud/html nextcloud/data immich/model-cache jellyfin/config jellyfin/cache seerr/config calibre/config audiobookshelf/config audiobookshelf/metadata authelia adguard/work adguard/conf mollysocket/data transmission/config gluetun prowlarr/config sonarr/config radarr/config lidarr/config bazarr/config tdarr/server tdarr/configs tdarr/logs tdarr/transcode_cache recyclarr/config recyclarr/data woodpecker databases/nextcloud-mariadb databases/immich-postgres backups)
   local dir
-  for dir in "${dirs[@]}"; do install -d -m 0750 -o "$ADMIN_USER" -g "$ADMIN_USER" "/srv/$dir"; done
+  # Only create missing directories. Re-running install -d on an existing
+  # directory rewrites its owner and mode, which clobbers data dirs owned by a
+  # container's own user (e.g. the Postgres/MariaDB UID) and breaks a running
+  # database mid-flight with "Permission denied" on its data files.
+  for dir in "${dirs[@]}"; do
+    [[ -d "/srv/$dir" ]] || install -d -m 0750 -o "$ADMIN_USER" -g "$ADMIN_USER" "/srv/$dir"
+  done
   docker network inspect proxy >/dev/null 2>&1 || docker network create proxy >/dev/null
   docker network inspect home-network >/dev/null 2>&1 || docker network create home-network >/dev/null
 }
