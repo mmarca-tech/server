@@ -27,10 +27,12 @@ services.
 - The configured SSH administrator has passwordless sudo; possession of that
   private SSH key is equivalent to root access and must be protected.
 - Public applications: Nextcloud, Immich, Jellyfin, Seerr, Calibre-Web,
-  Audiobookshelf, n8n, OpenProject, and Authelia through Caddy.
-- Private applications: media automation, Home Assistant, AdGuard, Invidious,
-  and download administration through the WireGuard address.
+  Audiobookshelf, and Authelia through Caddy.
+- Private applications: media automation, AdGuard, and download administration
+  through the WireGuard address.
 - Databases, caches, browser workers, and support containers are internal-only.
+- A Woodpecker CI agent attaches outbound to Codeberg's hosted instance; it has
+  no inbound exposure but mounts the Docker socket to run pipeline steps.
 - Secrets are stored under `/etc/server-infra`, never in this repository.
 
 ## Documentation

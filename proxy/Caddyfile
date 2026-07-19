@@ -46,16 +46,6 @@ audiobookshelf.{$ROOT_DOMAIN} {
 	reverse_proxy audiobookshelf:80
 }
 
-n8n.{$ROOT_DOMAIN} {
-	import secure_headers
-	reverse_proxy n8n:5678
-}
-
-openproject.{$ROOT_DOMAIN} {
-	import secure_headers
-	reverse_proxy openproject:8080
-}
-
 auth.{$ROOT_DOMAIN} {
 	import secure_headers
 	reverse_proxy authelia:9091

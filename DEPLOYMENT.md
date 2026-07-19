@@ -11,7 +11,7 @@ permission.
 Create A records pointing to `PUBLIC_IPV4` for:
 
 ```text
-@ nc immich hometheater seerr calibre audiobookshelf n8n openproject auth
+@ nc immich hometheater seerr calibre audiobookshelf auth
 ```
 
 Do not create AAAA records unless the VPS IPv6 address is configured and

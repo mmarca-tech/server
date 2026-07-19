@@ -7,9 +7,9 @@ VERSION_FILE="${VERSION_FILE:-$REPO_ROOT/config/versions.env}"
 DEPLOY_CONFIG="${DEPLOY_CONFIG:-/etc/server-infra/deploy.env}"
 SECRETS_FILE="${SECRETS_FILE:-/etc/server-infra/secrets.env}"
 
-CORE_STACKS=(nextcloud immich jellyfin seerr calibre audiobookshelf n8n openproject authelia proxy)
-FULL_STACKS=(nextcloud immich jellyfin seerr calibre audiobookshelf n8n openproject authelia invidious mollysocket media-vpn sonarr radarr lidarr flaresolverr bazarr tdarr recyclarr ha adguard proxy)
-PUBLIC_SUBDOMAINS=(nc immich hometheater seerr calibre audiobookshelf n8n openproject auth)
+CORE_STACKS=(nextcloud immich jellyfin seerr calibre audiobookshelf authelia woodpecker proxy)
+FULL_STACKS=(nextcloud immich jellyfin seerr calibre audiobookshelf authelia mollysocket media-vpn sonarr radarr lidarr flaresolverr bazarr tdarr recyclarr adguard woodpecker proxy)
+PUBLIC_SUBDOMAINS=(nc immich hometheater seerr calibre audiobookshelf auth)
 
 die() {
   echo "ERROR: $*" >&2

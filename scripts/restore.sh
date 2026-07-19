@@ -29,14 +29,8 @@ load_environment
 
 compose nextcloud up -d --wait database cache
 compose immich up -d --wait database cache
-compose openproject up -d --wait database cache
 compose nextcloud exec -T -e MYSQL_PWD="$NEXTCLOUD_DB_PASSWORD" database mariadb -unextcloud nextcloud <"$backup/nextcloud.sql"
 compose immich exec -T database pg_restore --clean --if-exists -U immich -d immich <"$backup/immich.dump"
-compose openproject exec -T database pg_restore --clean --if-exists -U openproject -d openproject <"$backup/openproject.dump"
-if [[ "$DEPLOY_PROFILE" == full ]]; then
-  compose invidious up -d --wait database
-  compose invidious exec -T database pg_restore --clean --if-exists -U invidious -d invidious <"$backup/invidious.dump"
-fi
 
 if [[ -d "$backup/sqlite" ]]; then
   while IFS= read -r -d '' sqlite_backup; do

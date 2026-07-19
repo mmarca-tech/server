@@ -1,0 +1,25 @@
+services:
+  woodpecker-agent:
+    image: ${WOODPECKER_AGENT_IMAGE}
+    restart: unless-stopped
+    # The docker backend drives the host daemon through the mounted socket, so
+    # the agent runs as root. no-new-privileges still blocks in-container
+    # escalation beyond that already-root-equivalent socket access.
+    security_opt: [no-new-privileges:true]
+    networks: [woodpecker]
+    volumes:
+      # Persists the agent ID so it re-registers as the same agent on restart.
+      - /srv/woodpecker:/etc/woodpecker
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      TZ: ${TZ}
+      # Codeberg-hosted Woodpecker server: gRPC over TLS on port 443.
+      WOODPECKER_SERVER: ${WOODPECKER_SERVER:-ci.codeberg.org:443}
+      WOODPECKER_GRPC_SECURE: ${WOODPECKER_GRPC_SECURE:-true}
+      WOODPECKER_AGENT_SECRET: ${WOODPECKER_AGENT_SECRET}
+      WOODPECKER_AGENT_CONFIG_FILE: /etc/woodpecker/agent.conf
+      WOODPECKER_BACKEND: docker
+      WOODPECKER_MAX_WORKFLOWS: ${WOODPECKER_MAX_WORKFLOWS:-2}
+
+networks:
+  woodpecker: {}

@@ -37,6 +37,7 @@ preflight() {
   is_placeholder "${AUTHELIA_ADMIN_PASSWORD_HASH:-}" && die "Set AUTHELIA_ADMIN_PASSWORD_HASH"
   # shellcheck disable=SC2016
   [[ "$AUTHELIA_ADMIN_PASSWORD_HASH" == '$argon2id$'* ]] || die "AUTHELIA_ADMIN_PASSWORD_HASH must be an Argon2id hash"
+  is_placeholder "${WOODPECKER_AGENT_SECRET:-}" && die "Set WOODPECKER_AGENT_SECRET (Codeberg CI agent secret)"
   [[ "$ROOT_DOMAIN" =~ ^[a-z0-9][a-z0-9.-]*\.[a-z]{2,}$ ]] || die "ROOT_DOMAIN is invalid"
   [[ "$ACME_EMAIL" =~ ^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$ ]] || die "ACME_EMAIL is invalid"
   [[ "$ADMIN_EMAIL" =~ ^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$ ]] || die "ADMIN_EMAIL is invalid"
@@ -227,7 +228,7 @@ prepare_runtime() {
     grep -q "^${key}=" "$SECRETS_FILE" || printf '%s=%s\n' "$key" "$(openssl rand -hex "$bytes")" >>"$SECRETS_FILE"
   }
   local key
-  for key in NEXTCLOUD_DB_ROOT_PASSWORD NEXTCLOUD_DB_PASSWORD NEXTCLOUD_ADMIN_PASSWORD IMMICH_DB_PASSWORD INVIDIOUS_DB_PASSWORD INVIDIOUS_HMAC_KEY INVIDIOUS_COMPANION_SECRET N8N_ENCRYPTION_KEY N8N_RUNNERS_AUTH_TOKEN BROWSERLESS_TOKEN OPENPROJECT_DB_PASSWORD OPENPROJECT_SECRET_KEY_BASE OPENPROJECT_ADMIN_PASSWORD AUTHELIA_SESSION_SECRET AUTHELIA_STORAGE_ENCRYPTION_KEY AUTHELIA_JWT_SECRET; do
+  for key in NEXTCLOUD_DB_ROOT_PASSWORD NEXTCLOUD_DB_PASSWORD NEXTCLOUD_ADMIN_PASSWORD IMMICH_DB_PASSWORD AUTHELIA_SESSION_SECRET AUTHELIA_STORAGE_ENCRYPTION_KEY AUTHELIA_JWT_SECRET; do
     ensure_secret "$key"
   done
   chmod 600 "$SECRETS_FILE"
@@ -256,7 +257,7 @@ prepare_runtime() {
     rm -f "$users_database"
   fi
 
-  local dirs=(proxy/caddy-data proxy/caddy-config media media/movies media/tv media/music media/audiobooks media/podcasts media/books media/downloads media/downloads/incomplete media/immich/library nextcloud/html nextcloud/data immich/model-cache jellyfin/config jellyfin/cache seerr/config calibre/config audiobookshelf/config audiobookshelf/metadata invidious/db n8n/data openproject/assets authelia homeassistant/config adguard/work adguard/conf mollysocket/data transmission/config gluetun prowlarr/config sonarr/config radarr/config lidarr/config bazarr/config tdarr/server tdarr/configs tdarr/logs tdarr/transcode_cache recyclarr/config recyclarr/data databases/nextcloud-mariadb databases/immich-postgres databases/openproject-postgres backups)
+  local dirs=(proxy/caddy-data proxy/caddy-config media media/movies media/tv media/music media/audiobooks media/podcasts media/books media/downloads media/downloads/incomplete media/immich/library nextcloud/html nextcloud/data immich/model-cache jellyfin/config jellyfin/cache seerr/config calibre/config audiobookshelf/config audiobookshelf/metadata authelia adguard/work adguard/conf mollysocket/data transmission/config gluetun prowlarr/config sonarr/config radarr/config lidarr/config bazarr/config tdarr/server tdarr/configs tdarr/logs tdarr/transcode_cache recyclarr/config recyclarr/data woodpecker databases/nextcloud-mariadb databases/immich-postgres backups)
   local dir
   for dir in "${dirs[@]}"; do install -d -m 0750 -o "$ADMIN_USER" -g "$ADMIN_USER" "/srv/$dir"; done
   docker network inspect proxy >/dev/null 2>&1 || docker network create proxy >/dev/null
