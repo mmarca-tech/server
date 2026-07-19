@@ -86,10 +86,10 @@ preflight() {
   if ! is_true "${SKIP_DNS_CHECK:-false}"; then
     local host resolved resolved6
     while IFS= read -r host; do
-      resolved="$(getent ahostsv4 "$host" | awk 'NR==1 {print $1}')"
+      resolved="$(getent ahostsv4 "$host" | awk 'NR==1 {print $1}' || true)"
       # shellcheck disable=SC2153
       [[ "$resolved" == "$PUBLIC_IPV4" ]] || die "$host does not resolve to PUBLIC_IPV4"
-      resolved6="$(getent ahostsv6 "$host" | awk 'NR==1 {print $1}')"
+      resolved6="$(getent ahostsv6 "$host" | awk 'NR==1 {print $1}' || true)"
       if [[ -n "${PUBLIC_IPV6:-}" ]]; then
         [[ "$resolved6" == "$PUBLIC_IPV6" ]] || die "$host does not resolve to PUBLIC_IPV6"
       else
