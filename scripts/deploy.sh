@@ -266,20 +266,23 @@ prepare_runtime() {
   for dir in "${dirs[@]}"; do
     [[ -d "/srv/$dir" ]] || install -d -m 0750 -o "$ADMIN_USER" -g "$ADMIN_USER" "/srv/$dir"
   done
-  # Self-heal database data-dir ownership. Each DB container runs as its own
-  # UID; if a data dir's top-level owner ever drifts from the files inside
-  # (e.g. reset to root by an earlier bad run), the DB loses access and fails
-  # with "Permission denied". Realign the tree to whoever owns the data —
-  # derived from the files themselves, so no UID is hardcoded. Chowning to the
-  # existing data owner only restores access; it never breaks a running DB.
-  local db_dir data_owner
-  for db_dir in /srv/databases/*/; do
-    [[ -d "$db_dir" ]] || continue
-    data_owner="$(find "$db_dir" -mindepth 1 -maxdepth 1 -printf '%U:%G\n' 2>/dev/null | sort | uniq -c | sort -rn | awk 'NR==1 {print $2}')"
+  # Self-heal data dirs owned by a container's own UID rather than PUID: the
+  # databases (Postgres/MariaDB) and the Nextcloud web root + data (www-data).
+  # If a dir's top-level owner ever drifts from the files inside (e.g. reset to
+  # root by an earlier bad run) the service loses access and fails with
+  # permission errors, and these images cannot repair the mount root
+  # themselves. Realign the tree to whoever owns the data, derived from the
+  # files themselves so no UID is hardcoded. It only runs on a mismatch, and
+  # chowning to the existing data owner restores access without ever breaking a
+  # running service.
+  local heal_dir data_owner
+  for heal_dir in /srv/databases/*/ /srv/nextcloud/html /srv/nextcloud/data; do
+    [[ -d "$heal_dir" ]] || continue
+    data_owner="$(find "$heal_dir" -mindepth 1 -maxdepth 1 -printf '%U:%G\n' 2>/dev/null | sort | uniq -c | sort -rn | awk 'NR==1 {print $2}')"
     [[ -n "$data_owner" ]] || continue
-    if [[ "$(stat -c '%u:%g' "$db_dir")" != "$data_owner" ]]; then
-      echo "Healing database data-dir ownership: $db_dir -> $data_owner"
-      chown -R "$data_owner" "$db_dir"
+    if [[ "$(stat -c '%u:%g' "$heal_dir")" != "$data_owner" ]]; then
+      echo "Healing data-dir ownership: $heal_dir -> $data_owner"
+      chown -R "$data_owner" "$heal_dir"
     fi
   done
   docker network inspect proxy >/dev/null 2>&1 || docker network create proxy >/dev/null
