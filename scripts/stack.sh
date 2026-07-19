@@ -26,7 +26,14 @@ case "$action" in
   up)
     for stack in "${stacks[@]}"; do
       echo "Starting $stack"
-      compose "$stack" up -d --build --wait --wait-timeout "${COMPOSE_WAIT_TIMEOUT:-600}"
+      # Air-gapped mollysocket has no web server and exits until at least one
+      # Signal connection is registered, so it can never satisfy --wait. Start
+      # it without gating the deploy on its health; it has no dependents.
+      if [[ "$stack" == mollysocket ]]; then
+        compose "$stack" up -d --build
+      else
+        compose "$stack" up -d --build --wait --wait-timeout "${COMPOSE_WAIT_TIMEOUT:-600}"
+      fi
     done
     ;;
   down)
