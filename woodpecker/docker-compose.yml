@@ -19,7 +19,11 @@ services:
       WOODPECKER_AGENT_SECRET: ${WOODPECKER_AGENT_SECRET}
       WOODPECKER_AGENT_CONFIG_FILE: /etc/woodpecker/agent.conf
       WOODPECKER_BACKEND: docker
-      WOODPECKER_MAX_WORKFLOWS: ${WOODPECKER_MAX_WORKFLOWS:-2}
+      # One workflow at a time: this host has 16 GB RAM and co-hosts other
+      # services, and a Flutter release build already peaks around 4 GB of Gradle
+      # heap plus the Dart AOT compiler. Two concurrent builds (e.g. a PR and the
+      # nightly, now that both pipelines pin here) overran RAM and got OOM-killed.
+      WOODPECKER_MAX_WORKFLOWS: ${WOODPECKER_MAX_WORKFLOWS:-1}
       # A custom label so a workflow can pin itself to THIS agent. Adds to the
       # built-in platform/hostname/backend/repo labels rather than replacing them.
       # The android-app release/nightly pipeline filters on `runner=openvitals` to
