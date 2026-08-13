@@ -10,6 +10,9 @@ SECRETS_FILE="${SECRETS_FILE:-/etc/server-infra/secrets.env}"
 CORE_STACKS=(nextcloud immich jellyfin seerr calibre audiobookshelf authelia proxy)
 FULL_STACKS=(nextcloud immich jellyfin seerr calibre audiobookshelf authelia mollysocket media-vpn sonarr radarr lidarr flaresolverr bazarr tdarr recyclarr adguard proxy)
 PUBLIC_SUBDOMAINS=(nc immich hometheater seerr calibre audiobookshelf auth)
+# Every stack declares these bridges as external, so they must already exist
+# before any stack starts.
+EXTERNAL_NETWORKS=(proxy home-network)
 
 die() {
   echo "ERROR: $*" >&2
@@ -53,6 +56,13 @@ public_hosts() {
   printf '%s\n' "$ROOT_DOMAIN"
   for prefix in "${PUBLIC_SUBDOMAINS[@]}"; do
     printf '%s.%s\n' "$prefix" "$ROOT_DOMAIN"
+  done
+}
+
+ensure_networks() {
+  local network
+  for network in "${EXTERNAL_NETWORKS[@]}"; do
+    docker network inspect "$network" >/dev/null 2>&1 || docker network create "$network" >/dev/null
   done
 }
 

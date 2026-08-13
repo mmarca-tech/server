@@ -24,6 +24,9 @@ fi
 
 case "$action" in
   up)
+    # Containers and their networks can be lost together (an unclean shutdown
+    # drops both), so recovering must not require a full deploy run.
+    ensure_networks
     for stack in "${stacks[@]}"; do
       echo "Starting $stack"
       # Air-gapped mollysocket has no web server and exits until at least one
