@@ -154,15 +154,26 @@ install_admin() {
   install -m 0440 "$sudoers" "/etc/sudoers.d/90-server-infra-$ADMIN_USER"
   rm -f "$sudoers"
   visudo -cf "/etc/sudoers.d/90-server-infra-$ADMIN_USER"
-  install -d -m 0700 -o "$ADMIN_USER" -g "$ADMIN_USER" "/home/$ADMIN_USER/.ssh"
+  # Read the real home directory instead of assuming /home/USER; root's is
+  # /root, and sshd only reads authorized_keys under the account's own home.
+  local admin_home
+  admin_home="$(getent passwd "$ADMIN_USER" | cut -d: -f6)"
+  [[ -n "$admin_home" ]] || die "Cannot determine the home directory for $ADMIN_USER"
+  install -d -m 0700 -o "$ADMIN_USER" -g "$ADMIN_USER" "$admin_home/.ssh"
   local authorized_keys
   authorized_keys="$(mktemp)"
   printf '%s\n' "$SSH_PUBLIC_KEY" >"$authorized_keys"
-  install -m 0600 -o "$ADMIN_USER" -g "$ADMIN_USER" "$authorized_keys" "/home/$ADMIN_USER/.ssh/authorized_keys"
+  install -m 0600 -o "$ADMIN_USER" -g "$ADMIN_USER" "$authorized_keys" "$admin_home/.ssh/authorized_keys"
   rm -f "$authorized_keys"
-  local ssh_config
+  local ssh_config root_login
+  # When root is itself the administrator there is no other key-holding
+  # account, so denying root login would leave no way in over SSH.
+  root_login=no
+  if [[ "$ADMIN_USER" == root ]]; then
+    root_login=prohibit-password
+  fi
   ssh_config="$(mktemp)"
-  printf 'Port %s\nPasswordAuthentication no\nKbdInteractiveAuthentication no\nPermitRootLogin no\nPubkeyAuthentication yes\n' "${SSH_PORT:-22}" >"$ssh_config"
+  printf 'Port %s\nPasswordAuthentication no\nKbdInteractiveAuthentication no\nPermitRootLogin %s\nPubkeyAuthentication yes\n' "${SSH_PORT:-22}" "$root_login" >"$ssh_config"
   install -m 0644 "$ssh_config" /etc/ssh/sshd_config.d/60-server-infra.conf
   rm -f "$ssh_config"
   sshd -t
@@ -284,8 +295,7 @@ prepare_runtime() {
       chown -R "$data_owner" "$heal_dir"
     fi
   done
-  docker network inspect proxy >/dev/null 2>&1 || docker network create proxy >/dev/null
-  docker network inspect home-network >/dev/null 2>&1 || docker network create home-network >/dev/null
+  ensure_networks
 }
 
 validate_configs() {
